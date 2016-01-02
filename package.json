@@ -1,0 +1,10 @@
+{
+  "name": "tetu",
+  "version": "0.0.1",
+  "description": "cross platform secure chat and file sharing",
+  "main": "main.js",
+  "devDependencies": {
+    "electron-prebuilt": "^0.36.2"
+  },
+  "author": "swimmadude66"
+}

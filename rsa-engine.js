@@ -1,21 +1,20 @@
-var encrypt = require('cryptico').RSAencrypt;
-var rsa = require('node-rsa');
-var fs = require('fs');
+//const RSA = require('cryptico');
+const rsa= require('node-rsa');
+const fs = require('fs');
 
-const privatekey = fs.readFileSync('./test.pem');
 
-var key = new rsa(privatekey);
+var privatekey = fs.readFileSync('./test.pem').toString();
+var publickey = fs.readFileSync('./test.pub').toString();
+var selfrsa = new rsa(privatekey, 'private');
 
-/*
-Do NOT like having 2 rsa libraries. However, node-rsa does not allow encrypt without making a whole key obj.
-Instead, auth/decrypt will be node-rsa; Encrypt on send will use cryptio.
-*/
 
 module.exports={
-  encrypt: function (message, publickey){
-    return RSAencrypt(message, publickey).cipher;
+  encrypt: function (message){
+    var mkey = new rsa(); //publickey, 'public'
+    mkey.importKey(publickey, 'public');
+    return mkey.encrypt(message,'base64');
   },
   decrypt: function(enc_message){
-    return key.decrypt(enc_message, 'json');
+    return selfrsa.decrypt(enc_message,'json');
   }
 };

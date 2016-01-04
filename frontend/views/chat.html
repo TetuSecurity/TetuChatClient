@@ -1,8 +1,8 @@
-<div class="container-fluid">
+<div class="container-fluid" style="width:100%;">
   <div class="row">
     <p ng-repeat="m in messages">{{m}}</p>
   </div>
-  <div class="row">
+  <div class="row" style="position:fixed; bottom:30px; width:100%; height:30px;">
     <form ng-submit="sendMessage()">
       <div class="input-group">
         <input type="text" class="form-control" placeholder="Search for group" ng-model="chatInput.Text">

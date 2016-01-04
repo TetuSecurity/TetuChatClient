@@ -1,0 +1,15 @@
+<div class="container-fluid">
+  <div class="row">
+    <p ng-repeat="m in messages">{{m}}</p>
+  </div>
+  <div class="row">
+    <form ng-submit="sendMessage()">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Search for group" ng-model="chatInput.Text">
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="button" ng-click="sendMessage()">Send</button>
+        </span>
+      </div><!-- /input-group -->
+    </form>
+  </div>
+</div>

@@ -4,6 +4,7 @@ const app = electron.app;  // Module to control application life.
 const ipcMain = require('electron').ipcMain;
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
@@ -36,11 +37,4 @@ app.on('ready', function() {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
-});
-
-var windows = {};
-
-ipcMain.on('register-window', function(event, arg) {
-  windows[arg] = event.sender;
-  event.returnValue = 'pong';
 });

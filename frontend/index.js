@@ -7,6 +7,20 @@ app.controller('PageCtrl', function ($scope, $http) {
 	var rsa = remote.require('./rsa-engine');
 	$scope.messages = [];
 	$scope.chatInput={};
+	$scope.auth= {};
+
+	$scope.generate= function(){
+		rsa.generateKey($scope.auth.passphrase);
+		$scope.messages.push('key generated!');
+	}
+
+	$scope.load = function(location){
+		rsa.loadKey(location);
+	}
+
+	$scope.haskey=function(){
+		return rsa.hasKey();
+	}
 
 	$scope.sendMessage = function(){
 		var enc = rsa.encrypt($scope.chatInput.Text)

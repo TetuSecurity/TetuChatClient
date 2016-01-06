@@ -16,6 +16,7 @@ app.controller('PageCtrl', function ($scope, $http) {
 
 	$scope.load = function(location){
 		rsa.loadKey(location);
+		$scope.messages.push(JSON.stringify(rsa.login('swimmadude66')));
 	}
 
 	$scope.haskey=function(){

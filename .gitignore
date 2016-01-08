@@ -27,3 +27,4 @@ build/Release
 node_modules
 frontend/bower_components/
 app/src/frontend/bower_components/
+*.pem

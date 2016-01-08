@@ -1,19 +1,31 @@
 <div class="container">
-  <div class="row" ng-if="!haskey()">
-    <div class="col-md-4">&nbsp;</div>
-    <div class="col-md-4">
-      <div class="form-group container-fluid">
-        <form class="simple-form" name="authform" novalidate>
-          <div class="input-group form-group">
-            <span class="input-group-addon" id="passphrase" style="text-align:left; min-width:100px;"><b>passphrase</b></span>
-            <input type="text" class="form-control" placeholder="passphrase" name="pass" ng-model="auth.passphrase" required />
-          </div>
-          <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click="generate()">Generate</button>
-        </form>
-        <hr>
-        <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click="load('./access.key')">load key</button>
+  <div class="row">
+    <div class="authwindow">
+      <div class="col-md-4 col-md-offset-4">
+        <div class="form-group container-fluid">
+          <form class="simple-form" name="authform" novalidate>
+            <div class="input-group form-group">
+              <span class="input-group-addon" id="Server" style="text-align:left; min-width:100px;"><b>Server</b></span>
+              <input type="text" class="form-control" placeholder="Server URL" name="server" ng-model="auth.server" required />
+            </div>
+            <div class="input-group form-group">
+              <span class="input-group-addon" id="Username" style="text-align:left; min-width:100px;"><b>Username</b></span>
+              <input type="text" class="form-control" placeholder="Username" name="Username" ng-model="auth.username" required />
+            </div>
+            <div class="input-group form-group" ng-show="isLoggingIn">
+              <span class="input-group-addon" id="Username" style="text-align:left; min-width:100px;"><b>Load a Key</b></span>
+              <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" required />
+            </div>
+            <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click="login()" ng-show="isLoggingIn">Log in</button>
+            <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click="register()" ng-hide="isLoggingIn">Register</button>
+          </form>
+            <h4 class="text-center">or</h4>
+            <h3 class="text-center">
+              <a href="javascript:void(0);" ng-click="isLoggingIn=!isLoggingIn">{{isLoggingIn ? 'Sign up instead' : 'Log in instead'}}</a>
+            </h3>
+          <hr>
+        </div>
       </div>
     </div>
-    <div class="col-md-4">&nbsp;</div>
   </div>
 </div>

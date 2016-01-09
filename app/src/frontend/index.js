@@ -21,7 +21,7 @@ app.controller('PageCtrl', function ($scope, $http) {
 
 });
 
-app.config(['$routeProvider', '$httpProvider', function($routeProvider, $httpProvider) {
+app.config(['$routeProvider', function($routeProvider) {
 	$routeProvider.when('/', {
 		controller: 'PageCtrl',
 		templateUrl: 'views/chat.html',
@@ -53,6 +53,7 @@ app.config(['$routeProvider', '$httpProvider', function($routeProvider, $httpPro
 app.run(["$rootScope", "$location", function($rootScope, $location) {
   $rootScope.$on("$routeChangeError", function(event, current, previous, eventObj) {
     if (eventObj.authenticated === false) {
+			console.log('Please log in first');
       $location.path("/login");
     }
   });

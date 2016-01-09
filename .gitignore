@@ -28,3 +28,4 @@ node_modules
 frontend/bower_components/
 app/src/frontend/bower_components/
 *.pem
+server/src/config.json

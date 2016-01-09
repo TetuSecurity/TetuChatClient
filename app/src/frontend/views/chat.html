@@ -1,21 +1,4 @@
 <div class="container-fluid" style="width:100%;">
-  <div class="row" ng-if="!haskey()">
-    <div class="col-md-4">&nbsp;</div>
-    <div class="col-md-4">
-      <div class="form-group container-fluid">
-        <form class="simple-form" name="authform" novalidate>
-          <div class="input-group form-group">
-            <span class="input-group-addon" id="username" style="text-align:left; min-width:100px;"><b>Username</b></span>
-            <input type="text" class="form-control" placeholder="passphrase" name="pass" ng-model="auth.Username" required />
-          </div>
-          <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click="generate()">Generate</button>
-        </form>
-        <hr>
-        <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click="load('./access.key')">load key</button>
-      </div>
-    </div>
-    <div class="col-md-4">&nbsp;</div>
-  </div>
   <div class="row">
     <p ng-repeat="m in messages track by $index">{{m}}</p>
   </div>
@@ -26,7 +9,7 @@
         <span class="input-group-btn">
           <button class="btn btn-default" type="button" ng-click="sendMessage()">Send</button>
         </span>
-      </div><!-- /input-group -->
+      </div>
     </form>
   </div>
 </div>

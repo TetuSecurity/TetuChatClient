@@ -27,23 +27,29 @@ module.exports=function(ioclient){
       }
       return key.decrypt(enc_message.Message).toString();
     },
-    login: function(authdetails){
+    login: function(authdetails, callback){
       if(!key){
         key = new RSA();
       }
       var username = authdetails.username;
       key.importKey(fs.readFileSync(authdetails.privatekey).toString());
       ioclient.emit('login', {Username: username, Signature: key.sign(username)});
-      ioclient.on('loginResponse', function(verified){
-        return verified;
+      ioclient.on('loginResponse', function(data){
+        if(data.Error){
+          return callback(data.Error);
+        }
+        return callback(null, data.Success);
       });
     },
-    register: function(username){
+    register: function(username, callback){
       key = new RSA({b:4096},{signingScheme: 'pss-sha512'});
       fs.writeFileSync('./access.pem', key.exportKey());
       ioclient.emit('register', {Username: username, PublicKey: key.exportKey('public')});
       ioclient.on('registerResponse', function(data){
-        return data;
+        if(data.Error){
+          return callback(data.Error);
+        }
+        return callback(null, data.Success);
       });
     }
   };

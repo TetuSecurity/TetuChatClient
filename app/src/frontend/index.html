@@ -11,13 +11,13 @@
   </head>
   <body ng-controller="PageCtrl">
     <div ng-view class="view"></div>
-  </body>
-  <script src="bower_components/jquery/dist/jquery.min.js"></script><!-- load jquery -->
-  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-  <script src="bower_components/angular/angular.min.js"></script>
-  <script src="bower_components/angular-route/angular-route.min.js"></script>
-  <script src="index.js"></script>
-  <script src="services/authservice.js"></script>
-  <script src="controllers/authcontroller.js"></script>
 
+    <script>window.$ = window.jQuery = require('jquery');</script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/angular-route/angular-route.min.js"></script>
+    <script src="index.js"></script>
+    <script src="services/authservice.js"></script>
+    <script src="controllers/authcontroller.js"></script>
+  </body>
 </html>

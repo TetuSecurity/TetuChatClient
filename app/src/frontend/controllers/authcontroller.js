@@ -1,19 +1,42 @@
-app.controller('AuthCtrl', function ($scope, $http, authService, isLoggingIn) {
-	var remote = require('electron').remote;
-	var ioclient = remote.require('./sockets.js');
-	var rsa = remote.require('./rsa-engine')(ioclient);
+'use strict';
 
+app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn) {
   $scope.isLoggingIn = isLoggingIn;
 
 	$scope.auth= {};
 
 	$scope.login=function(){
-		authService.logIn($scope.auth);
+		authService.logIn($scope.auth,function(err, res){
+			if(err){
+				console.log(err);
+			}
+			else if(res){
+				console.log(authService.isLoggedIn());
+				$location.path('/');
+				$scope.$apply();
+			}
+			else{
+				console.log(res);
+				//display error
+			}
+		});
 	};
 
 	$scope.register=function(){
-		authService.signUp($scope.auth);
-	}
+		authService.signUp($scope.auth, function(err, res){
+			if(err){
+				console.log(err);
+			}
+			else if(res){
+				$location.path('/');
+				$scope.$apply();
+			}
+			else{
+				console.log(res);
+				//display error
+			}
+		});
+	};
 
 	$scope.fileNameChanged = function(ele){
 		var file = ele.files[0];

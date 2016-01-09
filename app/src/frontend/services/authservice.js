@@ -1,6 +1,6 @@
 'use strict';
 
-app.factory('authService', ['$q', '$http', function($q, $http){
+app.factory('authService', ['$q', function($q){
 
   var remote = require('electron').remote;
 	var ioclient = remote.require('./sockets.js');
@@ -22,29 +22,37 @@ app.factory('authService', ['$q', '$http', function($q, $http){
       }
       return deferred.promise;
     },
-    logIn: function(creds){
-      var deferred = $q.defer();
-      if(creds && creds.Username && creds.Key){
-        var loginSuccess = rsa.login(creds);
-        isLoggedIn = loginSuccess;
-        deferred.resolve(loginSuccess);
+    logIn: function(creds, callback){
+      if(creds && creds.username && creds.privatekey){
+        rsa.login(creds, function(err, success){
+          isLoggedIn = success;
+          if(err){
+            return callback(err);
+          }
+          else{
+            return callback(null, success);
+          }
+        });
       }
       else{
-        deferred.reject('No Credentials provided');
+        return callback('No Credentials provided');
       }
-      return deferred.promise;
     },
-    signUp: function(creds){
-      var deferred = $q.defer();
-      if(creds && creds.Username){
-        var loginSuccess = rsa.register(creds.Username);
-        isLoggedIn = loginSuccess;
-        deferred.resolve(loginSuccess);
+    signUp: function(creds, callback){
+      if(creds && creds.username){
+        rsa.register(creds.username, function(err, success){
+          isLoggedIn = success;
+          if(err){
+            return callback(err);
+          }
+          else{
+            return callback(null, success);
+          }
+        });
       }
       else{
-        deferred.reject('No Credentials Provided!');
+        return callback('No Provided Username');
       }
-      return deferred.promise;
     },
     logOut: function(){
       isLoggedIn = false;

@@ -11,7 +11,6 @@ app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn
 				console.log(err);
 			}
 			else if(res){
-				console.log(authService.isLoggedIn());
 				$location.path('/');
 				$scope.$apply();
 			}
@@ -40,7 +39,7 @@ app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn
 
 	$scope.fileNameChanged = function(ele){
 		var file = ele.files[0];
-		$scope.auth.privatekey = file.path;
+		$scope.auth.PrivateKey = file.path;
 	};
 
 });

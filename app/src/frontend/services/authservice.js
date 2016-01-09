@@ -6,11 +6,15 @@ app.factory('authService', ['$q', function($q){
 	var ioclient = remote.require('./sockets.js');
 	var rsa = remote.require('./rsa-engine')(ioclient);
 
+  var user;
   var isLoggedIn= false;
 
   return {
     isLoggedIn: function(){
       return isLoggedIn;
+    },
+    getUser:function(){
+      return user || {};
     },
     hasAccess: function(){
       var deferred = $q.defer();
@@ -23,13 +27,17 @@ app.factory('authService', ['$q', function($q){
       return deferred.promise;
     },
     logIn: function(creds, callback){
-      if(creds && creds.username && creds.privatekey){
+      if(creds && creds.Username && creds.PrivateKey){
         rsa.login(creds, function(err, success){
           isLoggedIn = success;
           if(err){
             return callback(err);
           }
           else{
+            if(success){
+              user = creds;
+              console.log(creds);
+            }
             return callback(null, success);
           }
         });
@@ -39,7 +47,7 @@ app.factory('authService', ['$q', function($q){
       }
     },
     signUp: function(creds, callback){
-      if(creds && creds.username){
+      if(creds && creds.Username){
         rsa.register(creds.username, function(err, success){
           isLoggedIn = success;
           if(err){

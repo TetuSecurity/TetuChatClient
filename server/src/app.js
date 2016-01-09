@@ -52,9 +52,31 @@ io.on('connection', function(socket){
       return socket.emit('registerResponse', {Success:true});
     });
   });
+  socket.on('getFriends', function(username){
+    console.log(username);
+    db.query('Select Username from users where Username != ?;', [username], function(err, results){
+      if(err){
+        return socket.emit('getFriendsResponse', {Success: false, Error: err});
+      }
+      console.log(results);
+      return socket.emit('getFriendsResponse', {Success: true, Friends: results});
+    });
+  });
+  socket.on('getKey', function(username){
+    console.log('getting key for', username)
+    db.query('Select PublicKey from users where Username = ? LIMIT 1;', [username], function(err, results){
+      if(err){
+        return socket.emit('getKeyResponse', {Success: false, Error: err});
+      }
+      if(results.length<1){
+        return socket.emit('getKeyResponse', {Success: false, Error: 'No user by that username'});
+      }
+      return socket.emit('getKeyResponse', {Success: true, Key: results[0].PublicKey});
+    });
+  });
   socket.on('message', function(data){
     var recipient = userToSocket[data.To];
-    io.to(recipient).emit('message', {From: socketToUser[socket], Message: data.Message})
+    io.to(recipient).emit('message', {From: socketToUser[socket], Message: data.Message});
   });
 });
 

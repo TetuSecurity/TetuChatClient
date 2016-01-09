@@ -31,8 +31,8 @@ module.exports=function(ioclient){
       if(!key){
         key = new RSA();
       }
-      var username = authdetails.username;
-      key.importKey(fs.readFileSync(authdetails.privatekey).toString());
+      var username = authdetails.Username;
+      key.importKey(fs.readFileSync(authdetails.PrivateKey).toString());
       ioclient.emit('login', {Username: username, Signature: key.sign(username)});
       ioclient.on('loginResponse', function(data){
         if(data.Error){

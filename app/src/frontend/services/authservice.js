@@ -48,7 +48,7 @@ app.factory('authService', ['$q', function($q){
     },
     signUp: function(creds, callback){
       if(creds && creds.Username){
-        rsa.register(creds.username, function(err, success){
+        rsa.register(creds.Username, function(err, success){
           isLoggedIn = success;
           if(err){
             return callback(err);

@@ -18,10 +18,8 @@ module.exports=function(ioclient){
       var message = pkey.encrypt(message, 'base64');
       return {Signature: key.sign(message), Message: message};
     },
-    decrypt: function(enc_message, publickey){
-      var pkey = new RSA();
-      pkey.importKey(publickey, 'public');
-      var valid_sig= pkey.verify(enc_message.Message, enc_message.Signature);
+    decrypt: function(enc_message){
+      var valid_sig= key.verify(enc_message.Message, enc_message.Signature);
       if(valid_sig){
         return 'Forged Signature!';
       }

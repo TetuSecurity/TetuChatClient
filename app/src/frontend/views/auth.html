@@ -5,15 +5,15 @@
         <div class="form-group container-fluid">
           <form class="simple-form" name="authform" novalidate>
             <div class="input-group form-group">
-              <span class="input-group-addon" id="Server" style="text-align:left; min-width:100px;"><b>Server</b></span>
+              <span class="input-group-addon authinput" id="Server"><b>Server</b></span>
               <input type="text" class="form-control" placeholder="Server URL" name="server" ng-model="auth.server" required />
             </div>
             <div class="input-group form-group">
-              <span class="input-group-addon" id="Username" style="text-align:left; min-width:100px;"><b>Username</b></span>
+              <span class="input-group-addon authinput" id="Username"><b>Username</b></span>
               <input type="text" class="form-control" placeholder="Username" name="Username" ng-model="auth.Username" required />
             </div>
             <div class="input-group form-group" ng-show="isLoggingIn">
-              <span class="input-group-addon" id="Username" style="text-align:left; min-width:100px;"><b>Load a Key</b></span>
+              <span class="input-group-addon authinput" id="Username"><b>Load a Key</b></span>
               <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" required />
             </div>
             <button class="btn btn-lg btn-primary btn-block" type="submit" ng-click="login()" ng-show="isLoggingIn">Log in</button>

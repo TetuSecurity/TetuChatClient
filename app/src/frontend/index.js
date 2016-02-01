@@ -19,11 +19,8 @@ app.controller('PageCtrl', function ($scope, authService) {
 				console.log(data.Error);
 			}
 			else if(data.Success){
-				$scope.friends=[];
-				for(var i=0; i< data.Friends.length; i++){
-					$scope.friends.push({Username: data.Friends[i].Username});
-				}
-				console.log($scope.friends);
+				$scope.friends= data.Friends;
+				$scope.$apply();
 			}
 			else{
 				console.log(data);
@@ -40,16 +37,15 @@ app.controller('PageCtrl', function ($scope, authService) {
 		$scope.chatInput = {};
 	};
 
-	$scope.openChat=function(){
-		var friend = $scope.friendSearch;
+	$scope.openChat=function(friend){
 		ioclient.emit('getKey', friend.Username);
 		ioclient.on('getKeyResponse', function(data){
 			if(data.Error){
 				console.log(data.Error);
 			}
 			else if(data.Success){
-				console.log(data);
 				$scope.messagePartner = {Username: friend.Username, PublicKey: data.Key};
+				$scope.$apply();
 			}
 			else{
 				console.log(data);
@@ -60,6 +56,7 @@ app.controller('PageCtrl', function ($scope, authService) {
 	ioclient.on('message', function(data){
 		var m = rsa.decrypt(data.Message);
 		$scope.messages.push(m);
+		$scope.$apply();
 	});
 });
 

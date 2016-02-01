@@ -32,6 +32,7 @@ function verifySignature(username, signature, callback){
 };
 
 io.on('connection', function(socket){
+  console.log('Client connected', socket.id);
   socket.on('login', function(data){
     verifySignature(data.Username, data.Signature, function(err, verified, publickey){
       if(err){

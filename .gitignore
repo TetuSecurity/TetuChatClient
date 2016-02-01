@@ -29,3 +29,4 @@ frontend/bower_components/
 app/src/frontend/bower_components/
 *.pem
 server/src/config.json
+app/src/frontend/lib/

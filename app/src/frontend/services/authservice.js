@@ -36,7 +36,6 @@ app.factory('authService', ['$q', function($q){
           else{
             if(success){
               user = creds;
-              console.log(creds);
             }
             return callback(null, success);
           }

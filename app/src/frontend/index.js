@@ -7,7 +7,8 @@ app.controller('PageCtrl', function ($scope, authService) {
 	var ioclient = remote.require('./sockets.js');
 	var rsa = remote.require('./rsa-engine')(ioclient);
 	$scope.messages = [];
-	$scope.messagePartner = null;
+	$scope.messagePartners = {};
+	$scope.focus = null;
 	$scope.friends = [];
 	$scope.chatInput={};
 	$scope.friendSearch={};
@@ -31,33 +32,50 @@ app.controller('PageCtrl', function ($scope, authService) {
 	getFriends();
 
 	$scope.sendMessage = function(){
-		var enc = rsa.encrypt($scope.chatInput.Text, $scope.messagePartner.PublicKey);
-		$scope.messages.push($scope.chatInput.Text);
-		ioclient.emit('message', {To:$scope.messagePartner.Username, Message:enc});
+		var enc = rsa.encrypt($scope.chatInput.Text, $scope.messagePartners[$scope.focus].PublicKey);
+		$scope.messagePartners[$scope.focus].Messages.push({From: authService.getUser().Username, Message: $scope.chatInput.Text});
+		ioclient.emit('message', {To:$scope.focus, Message:enc});
 		$scope.chatInput = {};
 	};
 
 	$scope.openChat=function(friend){
-		ioclient.emit('getKey', friend.Username);
-		ioclient.on('getKeyResponse', function(data){
-			if(data.Error){
-				console.log(data.Error);
-			}
-			else if(data.Success){
-				$scope.messagePartner = {Username: friend.Username, PublicKey: data.Key};
-				$scope.$apply();
-			}
-			else{
-				console.log(data);
-			}
-		});
+		if(!(friend.Username in $scope.messagePartners)){
+			$scope.messagePartners[friend.Username]={Username: friend.Username, Messages:[], newMessage: false};
+			ioclient.emit('getKey', friend.Username);
+		}
+		$scope.focus = friend.Username;
 	};
+
+	ioclient.on('getKeyResponse', function(data){
+		if(data.Error){
+			console.log(data.Error);
+		}
+		else if(data.Success){
+			if(data.Username in $scope.messagePartners){
+				$scope.messagePartners[data.Username].PublicKey= data.Key;
+			}
+			$scope.$apply();
+		}
+		else{
+			console.log(data);
+		}
+	});
 
 	ioclient.on('message', function(data){
 		var m = rsa.decrypt(data.Message);
-		$scope.messages.push(m);
+		var author = data.From;
+		if(!(author in $scope.messagePartners)){
+			$scope.messagePartners[author] = {Username: author, Messages: [], newMessage: true};
+			ioclient.emit('getKey', data.From);
+		}
+		$scope.messagePartners[author].Messages.push({From: data.From, Message: m});
 		$scope.$apply();
 	});
+
+	ioclient.on('updatefriends', function(data){
+		getFriends();
+	});
+
 });
 
 app.config(['$routeProvider', function($routeProvider) {

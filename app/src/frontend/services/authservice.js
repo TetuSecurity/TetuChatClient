@@ -53,6 +53,7 @@ app.factory('authService', ['$q', function($q){
             return callback(err);
           }
           else{
+            user = creds;
             return callback(null, success);
           }
         });

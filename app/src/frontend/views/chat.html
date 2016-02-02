@@ -2,22 +2,26 @@
   <div class="sidebar">
     <div class="row-fluid">
       <ul class="nav nav-pills nav-stacked">
-        <li class="friend" ng-repeat="friend in friends track by $index">
+        <li class="friend" ng-repeat="friend in friends track by $index" ng-class="{'active':friend.Username == focus}">
           <a href="javascript:void(0);" ng-click="openChat(friend)">{{friend.Username}}</a>
         </li>
       </ul>
     </div>
   </div>
-  <div class="messagebox" ng-show="messagePartner">
-    <div class="row-fluid">
-      <p ng-repeat="m in messages track by $index">{{m}}</p>
+  <div class="messagebox" ng-show="focus">
+    <div class="chatheader">
+      <h1>{{focus}} <small>now chatting</small></h1>
+    </div>
+    <hr>
+    <div class="row-fluid messages">
+      <p ng-repeat="m in messagePartners[focus].Messages track by $index"><b>{{m.From}}:</b>{{m.Message}}</p>
     </div>
     <div class="chatinput">
-      <form ng-submit="sendMessage()">
+      <form name="chatform" ng-submit="chatform.$valid && sendMessage()">
         <div class="input-group">
-          <input type="text" class="form-control" placeholder="type here to chat" ng-model="chatInput.Text">
+          <input type="text" class="form-control" placeholder="type here to chat" ng-model="chatInput.Text" ng-pattern="/^\S.{0,500}/" required>
           <span class="input-group-btn">
-            <button class="btn btn-default" type="button" ng-click="sendMessage()">Send</button>
+            <button class="btn btn-default" type="button" ng-click="chatform.$valid && sendMessage()" ng-disabled="chatform.$invalid">Send</button>
           </span>
         </div>
       </form>

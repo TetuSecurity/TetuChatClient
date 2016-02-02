@@ -38,8 +38,9 @@ io.on('connection', function(socket){
       if(err){
         return socket.emit('loginResponse', {Success:false, Error:err});
       }
-      socketToUser[socket.id] = {Username: data.Username, PublicKey: publickey};
+      socketToUser[socket.id] = data.Username;
       userToSocket[data.Username] = socket.id;
+      socket.broadcast.emit('friendsupdate');
       return socket.emit('loginResponse', {Success:verified});
     });
   });
@@ -48,8 +49,9 @@ io.on('connection', function(socket){
       if(err){
         return socket.emit('registerResponse', {Success:false, Error:err});
       }
-      socketToUser[socket.id] = {Username: data.Username, PublicKey: data.PublicKey};
+      socketToUser[socket.id] = data.Username;
       userToSocket[data.Username] = socket.id;
+      socket.broadcast.emit('friendsupdate');
       return socket.emit('registerResponse', {Success:true});
     });
   });
@@ -59,7 +61,14 @@ io.on('connection', function(socket){
       if(err){
         return socket.emit('getFriendsResponse', {Success: false, Error: err});
       }
-      console.log(results);
+      results.forEach(function(r){
+        if(userToSocket[r.Username]){
+          r.Active = true;
+        }
+        else{
+          r.Active=false;
+        }
+      });
       return socket.emit('getFriendsResponse', {Success: true, Friends: results});
     });
   });
@@ -72,12 +81,17 @@ io.on('connection', function(socket){
       if(results.length<1){
         return socket.emit('getKeyResponse', {Success: false, Error: 'No user by that username'});
       }
-      return socket.emit('getKeyResponse', {Success: true, Key: results[0].PublicKey});
+      return socket.emit('getKeyResponse', {Success: true, Username: username, Key: results[0].PublicKey});
     });
   });
   socket.on('message', function(data){
     var recipient = userToSocket[data.To];
-    io.to(recipient).emit('message', {From: socketToUser[socket], Message: data.Message});
+    io.to(recipient).emit('message', {From: socketToUser[socket.id], Message: data.Message});
+  });
+  socket.on('disconnect', function(){
+    var username = socketToUser[socket.id];
+    delete socketToUser[socket.id];
+    delete userToSocket[username];
   });
 });
 

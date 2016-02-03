@@ -56,7 +56,6 @@ io.on('connection', function(socket){
     });
   });
   socket.on('getFriends', function(username){
-    console.log(username);
     db.query('Select Username from users where Username != ?;', [username], function(err, results){
       if(err){
         return socket.emit('getFriendsResponse', {Success: false, Error: err});
@@ -92,6 +91,7 @@ io.on('connection', function(socket){
     var username = socketToUser[socket.id];
     delete socketToUser[socket.id];
     delete userToSocket[username];
+    socket.broadcast.emit('friendsupdate');
   });
 });
 

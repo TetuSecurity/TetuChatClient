@@ -44,11 +44,33 @@ html{
   margin-right:25px;
 }
 
+.friend{
+  width:100%;
+  padding: 5px 15px 5px 15px;
+}
+
+.friend.disabled a{
+  color: rgb(28,25,25);
+}
+
+.friend.active{
+  background-color: rgba(76, 9, 84, 0.73);
+}
+
+.friend:hover{
+  background-color: rgba(28, 25, 25, 0.62);
+}
+
+.friend.active:hover{
+  background-color: rgba(37, 7, 41, 0.6);
+}
+
 .friend a{
   color: #BBBBBB;
   font-family: monospace;
   font-size: 12pt;
   font-weight: bold;
+  text-decoration: none;
 }
 
 .authwindow {

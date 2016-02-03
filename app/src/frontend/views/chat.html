@@ -1,16 +1,21 @@
 <div class="container-fluid" id="chatwindow">
   <div class="sidebar">
     <div class="row-fluid">
-      <ul class="nav nav-pills nav-stacked">
-        <li class="friend" ng-repeat="friend in friends track by $index" ng-class="{'active':friend.Username == focus}">
-          <a href="javascript:void(0);" ng-click="openChat(friend)">{{friend.Username}}</a>
+      <ul class="list-unstyled friendlist">
+        <li><h3>Users Online</h3></li>
+        <li class="friend" ng-repeat="friend in friends | filter:{Active: true}  track by $index" ng-class="{'active':friend.Username == focus}">
+          <a href="javascript:void(0);" ng-click="openChat(friend)">{{friend.Username}} <span class="badge">{{messagePartners[friend.Username].newMessage ? '!' : ''}}</span></a>
+        </li>
+        <li><h3>Offline Users</h3></li>
+        <li class="friend" ng-repeat="friend in friends | filter:{Active: false} track by $index " ng-class="{'active':friend.Username == focus}">
+          <a href="javascript:void(0);" ng-click="openChat(friend)"><i>{{friend.Username}}</i> <span class="badge">{{messagePartners[friend.Username].newMessage ? '!' : ''}}</span></a>
         </li>
       </ul>
     </div>
   </div>
   <div class="messagebox" ng-show="focus">
     <div class="chatheader">
-      <h1>{{focus}} <small>now chatting</small></h1>
+      <h1>{{focus}} <small>{{isActive(focus) ? 'now chatting' : 'offline'}}</small></h1>
     </div>
     <hr>
     <div class="row-fluid messages">
@@ -19,9 +24,9 @@
     <div class="chatinput">
       <form name="chatform" ng-submit="chatform.$valid && sendMessage()">
         <div class="input-group">
-          <input type="text" class="form-control" placeholder="type here to chat" ng-model="chatInput.Text" ng-pattern="/^\S.{0,500}/" required>
+          <input type="text" class="form-control" placeholder="Type here to chat" ng-model="chatInput.Text" ng-pattern="/^\S.{0,500}/" ng-disabled="!isActive(focus)" required>
           <span class="input-group-btn">
-            <button class="btn btn-default" type="button" ng-click="chatform.$valid && sendMessage()" ng-disabled="chatform.$invalid">Send</button>
+            <button class="btn btn-default" type="button" ng-click="chatform.$valid && sendMessage()" ng-disabled="!isActive(focus) || chatform.$invalid">Send</button>
           </span>
         </div>
       </form>

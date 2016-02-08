@@ -29,7 +29,7 @@ function verifySignature(username, signature, callback){
     var verified = key.verify(username, signature);
     return callback(null, verified, results[0].PublicKey);
   });
-};
+}
 
 io.on('connection', function(socket){
   console.log('Client connected', socket.id);
@@ -72,7 +72,7 @@ io.on('connection', function(socket){
     });
   });
   socket.on('getKey', function(username){
-    console.log('getting key for', username)
+    console.log('getting key for', username);
     db.query('Select PublicKey from users where Username = ? LIMIT 1;', [username], function(err, results){
       if(err){
         return socket.emit('getKeyResponse', {Success: false, Error: err});
@@ -85,7 +85,18 @@ io.on('connection', function(socket){
   });
   socket.on('message', function(data){
     var recipient = userToSocket[data.To];
-    io.to(recipient).emit('message', {From: socketToUser[socket.id], Message: data.Message});
+    data.From = socketToUser[socket.id];
+    io.to(recipient).emit('message', data);
+  });
+  socket.on('filetransfer', function(data){
+    var recipient = userToSocket[data.To];
+    data.From = socketToUser[socket.id];
+    io.to(recipient).emit('filetransfer', data);
+  });
+  socket.on('sending', function(data){
+    console.log(data);
+    var recipient = userToSocket[data.To];
+    io.to(recipient).emit('sending', {From: socketToUser[socket.id]});
   });
   socket.on('disconnect', function(){
     var username = socketToUser[socket.id];

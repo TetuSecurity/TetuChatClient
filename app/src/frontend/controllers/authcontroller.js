@@ -1,5 +1,4 @@
 'use strict';
-
 app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn) {
   $scope.isLoggingIn = isLoggingIn;
 

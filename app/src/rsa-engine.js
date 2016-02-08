@@ -1,10 +1,9 @@
 const fs = require('fs');
 const RSA = require('node-rsa');
 
-var key = undefined;
+var key;
 
 module.exports=function(ioclient){
-
   var rsaengine = {
     hasKey: function(){
       return (!!key && !key.isEmpty());
@@ -15,15 +14,33 @@ module.exports=function(ioclient){
     encrypt: function (message, publickey){
       var pkey = new RSA();
       pkey.importKey(publickey, 'public');
-      var message = pkey.encrypt(message, 'base64');
-      return {Signature: key.sign(message), Message: message};
+      var m = pkey.encrypt(message, 'base64');
+      return {Signature: key.sign(m), Message: m};
     },
     decrypt: function(enc_message){
-      var valid_sig= key.verify(enc_message.Message, enc_message.Signature);
-      if(valid_sig){
+      var invalid_sig= key.verify(enc_message.Message, enc_message.Signature);
+      if(invalid_sig){
         return 'Forged Signature!';
       }
       return key.decrypt(enc_message.Message).toString();
+    },
+    encryptFile: function(packet, publickey){
+      var pkey = new RSA();
+      pkey.importKey(publickey, 'public');
+      var data = pkey.encrypt(packet);
+      var sig = key.sign(data);
+      return {Data: data, Signature: sig};
+    },
+    decryptFile: function(enc_file){
+      var invalid_sig= key.verify(enc_file.Data, enc_file.Signature);
+      console.log(invalid_sig);
+      if(invalid_sig){
+        return 'Forged Signature!';
+      }
+      return key.decrypt(enc_file.Data);
+    },
+    getMaxMessageSize:function(){
+      return key.getMaxMessageSize();
     },
     login: function(authdetails, callback){
       if(!key){
@@ -51,6 +68,5 @@ module.exports=function(ioclient){
       });
     }
   };
-
   return rsaengine;
 };

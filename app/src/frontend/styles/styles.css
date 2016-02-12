@@ -27,6 +27,18 @@ html{
   height: 100%;
 }
 
+.from{
+  height:15px;
+  font-size: 12pt;
+  font-weight: bold;
+  border-bottom: 1px #000;
+}
+
+.messageContents{
+  padding-left:50px;
+  font-family:'PT Serif';
+}
+
 .chatheader{
   height:50px;
 }

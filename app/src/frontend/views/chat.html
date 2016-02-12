@@ -19,7 +19,19 @@
     </div>
     <hr>
     <div class="row-fluid messages">
-      <p ng-repeat="m in messagePartners[focus].Messages track by $index"><b>{{m.From}}:</b>{{m.Message}}</p>
+      <div class="message" ng-repeat="m in messagePartners[focus].Messages track by $index">
+        <div class="from">
+          <p>{{m.From}}</p>
+        </div>
+        <div class="messageContents">
+          <div class="sentfile" ng-if="m.Type==='FILE'">
+            <p ng-if="files[m.ID].Status === 'IN PROGRESS'">Receiving file: {{files[m.ID].FileName}}</p>
+            <a href="javascript:void(0)" ng-if="files[m.ID].Status === 'DONE'" ng-click="downloadFile(m.ID)">{{files[m.ID].FileName}}</a>
+          </div>
+          <p ng-if="m.Message">{{m.Message}}</p>
+        </div>
+      </div>
+
     </div>
     <div class="chatinput">
       <input id="sendfile" type="file" onchange="angular.element(this).scope().fileNameChanged(this)" style="display: none;">

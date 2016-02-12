@@ -4,7 +4,6 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
   var uuid = remote.require('node-uuid');
   var ioclient = remote.require('./sockets.js');
   var rsa = remote.require('./rsa-engine')(ioclient);
-  $scope.messages = [];
   $scope.messagePartners = {};
   $scope.focus = null;
   $scope.friends = [];
@@ -136,22 +135,22 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
   });
 
   ioclient.on('filetransfer', function(data){
-    console.log(data);
     if(!(data.ID in $scope.files)){
       $scope.files[data.ID]= {
         ID: data.ID,
         FileName: data.FileName,
         FileSize: data.FileSize,
         Total : data.Total,
+        Progress: 0,
+        Status: 'IN PROGRESS',
         Contents : []
       };
+      $scope.messagePartners[data.From].Messages.push({From: data.From, Type: 'FILE', ID:data.ID});
     }
     $scope.files[data.ID].Contents[data.Position] = rsa.decryptFile({Data: data.Data, Signature: data.Signature});
-    console.log('File transfer ' + (($scope.files[data.ID].Contents.length/$scope.files[data.ID].Total)*100)+'% complete');
+    $scope.files[data.ID].Progress = (($scope.files[data.ID].Contents.length/$scope.files[data.ID].Total)*100);
     if($scope.files[data.ID].Contents.length == $scope.files[data.ID].Total){
-      var content = Buffer.concat($scope.files[data.ID].Contents, data.FileSize);
-      fs.writeFileSync('./'+$scope.files[data.ID].FileName, content);
-      console.log('file Written!');
+      $scope.files[data.ID]= {FileName: $scope.files[data.ID].FileName, Contents: Buffer.concat($scope.files[data.ID].Contents, data.FileSize), Status:'DONE'};
     }
     $scope.$apply();
   });

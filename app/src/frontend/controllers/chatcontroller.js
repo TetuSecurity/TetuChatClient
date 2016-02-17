@@ -51,6 +51,7 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
 
   $scope.sendFile=function(file){
     var fname = file.replace(/(.*[/\\])?([^/\\.]+\.[a-zA-Z0-9.]*)$/mig, '$2');
+    $scope.messagePartners[$scope.focus].Messages.push({From: authService.getUser().Username, Type: 'FILE', Message: 'sent file: '+ fname});
     var fbuffer = fs.readFileSync(file);
     var fsize = fbuffer.length;
     var fid = uuid.v4();
@@ -64,7 +65,6 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
       ioclient.emit('filetransfer', {ID: fid, FileName:fname, FileSize: fsize, To: $scope.focus, Position: pos, Total: totpieces, Data: enc_pack.Data, Signature: enc_pack.Signature});
       pos++;
     }
-    console.log('sent ' + pos + ' packets');
   };
 
   $scope.clickFile =function(){

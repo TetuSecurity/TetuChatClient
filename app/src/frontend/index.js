@@ -1,5 +1,3 @@
-'use strict'
-
 var app = angular.module('Tetu', ['ngRoute']);
 
 app.controller('PageCtrl', function ($scope, authService) {

@@ -1,18 +1,30 @@
 var express = require('express');
-var app = express();
-var http = require('http');
 var socketio = require('socket.io');
 var RSA = require('node-rsa');
-
 global.config = require('./config.json');
-
 var db = require('./middleware/db.js');
+var app = express();
+var PORT = 4321;
 
-var server= http.Server(app);
+if('SSL' in global.config){
+  var https = require('https');
+  var fs = require('fs');
+  var config = {
+    key: fs.readFileSync(global.config.SSL.keyfile),
+   cert: fs.readFileSync(global.config.SSL.certfile),
+   ca: fs.readFileSync(global.config.SSL.chainfile)
+  };
+  var server = https.createServer(config, app);
+  console.log('Using HTTPS!');
+}
+else{
+  var http = require('http');
+  var server= http.Server(app);
+}
 var io = socketio(server);
 
-server.listen(4321);
-
+server.listen(PORT);
+console.log('Server started on port', PORT);
 var userToSocket = {};
 var socketToUser={};
 
@@ -105,5 +117,3 @@ io.on('connection', function(socket){
     socket.broadcast.emit('friendsupdate');
   });
 });
-
-console.log("Server started on port 4321");

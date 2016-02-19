@@ -1,5 +1,3 @@
-'use strict';
-
 app.factory('authService', ['$q', function($q){
 
   var remote = require('electron').remote;
@@ -65,5 +63,5 @@ app.factory('authService', ['$q', function($q){
     logOut: function(){
       isLoggedIn = false;
     }
-  }
+  };
 }]);

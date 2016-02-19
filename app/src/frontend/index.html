@@ -4,21 +4,28 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--  build:css css/styles.min.css -->
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="styles/styles.css">
+    <!-- endbuild -->
     <title>TetuChat</title>
   </head>
   <body ng-controller="PageCtrl" style="height:100%;">
     <div ng-view class="view" style="height:100%;"></div>
 
-    <script>window.$ = window.jQuery = require('jquery');</script>
+    <!-- Launched with Electron -->
+    <script>if('require' in window){window.$ = window.jQuery = require('jquery');}</script>
+    <!--  build:js js/lib.min.js -->
     <script src="lib/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="lib/angular/angular.min.js"></script>
     <script src="lib/angular-route/angular-route.min.js"></script>
+    <!-- endbuild -->
+    <!--  build:ng js/app.min.js -->
     <script src="index.js"></script>
     <script src="services/authservice.js"></script>
     <script src="controllers/authcontroller.js"></script>
     <script src="controllers/chatcontroller.js"></script>
+    <!-- endbuild -->
   </body>
 </html>

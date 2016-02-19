@@ -30,3 +30,4 @@ app/src/frontend/bower_components/
 *.pem
 server/src/config.json
 app/src/frontend/lib/
+app/dist/

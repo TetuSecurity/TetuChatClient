@@ -21,13 +21,15 @@ coverage
 
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
+dist/
 
 # Dependency directory
-# https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
 frontend/bower_components/
-app/src/frontend/bower_components/
+src/frontend/bower_components/
+src/frontend/lib/
+
+#testing keys
 *.pem
-server/src/config.json
-app/src/frontend/lib/
-app/dist/
+
+

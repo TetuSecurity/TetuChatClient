@@ -1,7 +1,8 @@
 app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
   var remote = require('electron').remote;
-  var fs = remote.require('fs');
-  var uuid = remote.require('node-uuid');
+  var ipc = require('ipc');
+  var fs = require('fs');
+  var uuid = require('node-uuid');
   var ioclient = remote.require('./sockets.js');
   var rsa = remote.require('./rsa-engine')(ioclient);
   $scope.messagePartners = {};

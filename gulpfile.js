@@ -33,7 +33,7 @@ gulp.task('copy_images', function(){
 });
 
 gulp.task('copy_node', function(){
-  return gulp.src(['src/**/*', '!src/frontend/**/*', './package.json'])
+  return gulp.src(['src/**/*', '!src/frontend/**/*', 'src/package.json'])
       .pipe(gulp.dest('dist/src/'));
 });
 
@@ -51,7 +51,7 @@ gulp.task('usemin', ['bower', 'copy_views'], function(){
     .pipe(usemin({
         ng: [ngAnnotate(), uglify(), 'concat'],
         js: [ngAnnotate(), uglify(), 'concat'],
-        css: [uncss({html:['dist/src/frontend/**//*.html'], ignore:[/toast/i, /empty/i, /disabled/i, /active/i]}), nano(), 'concat']
+        css: [/*uncss({html:['dist/src/frontend/**//*.html'], ignore:[/toast/i, /empty/i, /disabled/i, /active/i]}),*/nano(), 'concat']
       })
     )
     .pipe(gulp.dest('dist/src/frontend'));
@@ -67,8 +67,8 @@ gulp.task('build-exe', ['usemin', 'copy_node', 'copy_fonts', 'lint', 'npm'], fun
       version: 'v0.36.7',
       platforms: ['win32-x64', 'darwin-x64', 'linux-x64'],
       packaging: false,
-      asar: false,
-      symbols: false,
+      asar: true,
+      symbols: true,
       platformResources: {
             darwin: {
                 CFBundleDisplayName: packageJson.name,

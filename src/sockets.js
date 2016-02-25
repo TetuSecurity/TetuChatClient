@@ -1,4 +1,4 @@
-const socketclient = require('socket.io-client')('https://52.72.184.55:4321');
+const socketclient = require('socket.io-client')('https://chatserv1.tetusecurity.com:4321');
 
 
 module.exports = socketclient;

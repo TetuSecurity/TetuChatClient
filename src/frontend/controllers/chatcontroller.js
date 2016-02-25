@@ -1,15 +1,13 @@
 app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
   var remote = require('electron').remote;
-  var ipc = require('ipc');
+  var ipc = require("electron").ipcRenderer;
   var fs = require('fs');
   var uuid = require('node-uuid');
   var ioclient = remote.require('./sockets.js');
-  var rsa = remote.require('./rsa-engine')(ioclient);
   $scope.messagePartners = {};
   $scope.focus = null;
   $scope.friends = [];
   $scope.chatInput={};
-  $scope.typeTimeout = null;
   $scope.files={};
 
 
@@ -39,15 +37,12 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
   };
 
   $scope.sendMessage = function(){
-    console.log(rsa.getMaxMessageSize());
-    var enc = rsa.encrypt($scope.chatInput.Text, $scope.messagePartners[$scope.focus].PublicKey);
+    ipc.send('encrypt-request', $scope.chatInput.Text, $scope.messagePartners[$scope.focus].PublicKey, $scope.focus);
     $scope.messagePartners[$scope.focus].Messages.push({From: authService.getUser().Username, Message: $scope.chatInput.Text});
-    ioclient.emit('message', {To:$scope.focus, Message:enc});
     $scope.chatInput = {};
-    $scope.messagePartners[$scope.focus].isTyping = false;
-    if(!$scope.messagePartners[$scope.focus].typeTimer){
-      $interval.cancel($scope.messagePartners[$scope.focus].typeTimer);
-    }
+    ipc.on('encrypt-response', function(event, envelope){
+      ioclient.emit('message', {To:envelope.To, Message:envelope.Data, Signature: envelope.Signature});
+    });
   };
 
   $scope.sendFile=function(file){
@@ -81,11 +76,6 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
     $scope.messagePartners[$scope.focus].newMessage= false;
   };
 
-  $scope.evaluateTyping=function(){
-    if($scope.messagePartners)
-    ioclient.emit('sending', {To: $scope.focus});
-  };
-
   $scope.fileNameChanged = function(ele){
     var file = ele.files[0];
     $scope.sendFile(file.path);
@@ -107,32 +97,20 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
   });
 
   ioclient.on('message', function(data){
-    var m = rsa.decrypt(data.Message);
     var author = data.From;
     if(!(author in $scope.messagePartners)){
       $scope.messagePartners[author] = {Username: author, Messages: []};
       ioclient.emit('getKey', data.From);
     }
-    $scope.messagePartners[author].Messages.push({From: data.From, Message: m});
-    if(author !== $scope.focus){
-      $scope.messagePartners[author].newMessage= true;
-    }
-    $scope.$apply();
-  });
-
-  ioclient.on('sending', function(data){
-    var author = data.From;
-    if(author in $scope.messagePartners){
-      $scope.messagePartners[author].partnerTyping = true;
-      $scope.$apply();
-      if($scope.messagePartners[author].partnerTypeTimer){
-        $timeout.cancel($scope.messagePartners[author].partnerTypeTimer);
+    ipc.send('decrypt-request', data.Message, data.Signature, author);
+    ipc.on('decrypt-response', function(event, res){
+      console.log(res);
+      $scope.messagePartners[res.From].Messages.push({From: res.From, Message: res.Data});
+      if(res.From !== $scope.focus){
+        $scope.messagePartners[res.From].newMessage= true;
       }
-      $scope.messagePartners[author].partnerTypeTimer = $timeout(function(){
-        $scope.messagePartners[author].partnerTyping = false;
-        $scope.$apply();
-      }, 3000);
-    }
+      $scope.$apply();
+    });
   });
 
   ioclient.on('filetransfer', function(data){

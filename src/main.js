@@ -1,36 +1,57 @@
 'use strict';
 const electron = require('electron');
 const app = electron.app;  // Module to control application life.
-const ipcMain = require('electron').ipcMain;
+const ipc = require('electron').ipcMain;
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+let bgWindow;
 
-// Quit when all windows are closed.
-app.on('window-all-closed', function() {
-  // On OS X it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform != 'darwin') {
+function createMainWindow(){
+  const win = new BrowserWindow({
+  width: 800,
+  height: 600
+  });
+
+  win.loadURL('file://' + __dirname + '/frontend/index.html');
+  win.on('closed', function(){
+    mainWindow = null;
+	  bgWindow = null;
     app.quit();
-  }
-});
+  });
+  return win;
+}
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
+function createBGWindow(){
+  const win = new BrowserWindow({
+    //width: 400,
+    //height: 200
+    show:false
+  });
+  win.loadURL('file://' + __dirname + '/background/index.html');
+  return win;
+}
+
 app.on('ready', function() {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600});
+  mainWindow = createMainWindow();
+  bgWindow = createBGWindow();
+});
 
-  // and load the index.html of the app.
-  mainWindow.loadURL('file://' + __dirname + '/frontend/index.html');
+//route events between frontend and background
 
-  // Emitted when the window is closed.
-  mainWindow.on('closed', function() {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
-  });
+ipc.on('encrypt-request', function(event, data, key, to){
+  bgWindow.webContents.send('encrypt-request', data, key, to);
+});
+
+ipc.on('decrypt-request', function(event, data, signature, author){
+  bgWindow.webContents.send('decrypt-request', data, signature, author);
+});
+
+ipc.on('encrypt-response', function(event, payload){
+  mainWindow.webContents.send('encrypt-response', payload);
+});
+
+ipc.on('decrypt-response', function(event, payload){
+  mainWindow.webContents.send('decrypt-response', payload);
 });

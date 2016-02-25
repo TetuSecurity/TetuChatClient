@@ -28,6 +28,7 @@ module.exports={
     return {Signature: key.sign(enc), Data: enc};
   },
   decrypt: function(enc_data, signature){
+    // @TODO: fix singature verification
     var invalid_sig= key.verify(enc_data, signature);
     if(invalid_sig){
       return 'Forged Signature!';

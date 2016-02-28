@@ -1,6 +1,6 @@
 app.controller('ChatCtrl', function ($scope, $http, authService) {
   var remote = require('electron').remote;
-  var ipc = require("electron").ipcRenderer;
+  var ipc = require('electron').ipcRenderer;
   var fs = require('fs');
   var uuid = require('node-uuid');
   var ioclient = remote.require('./sockets.js');
@@ -35,11 +35,28 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
         return callback();
       }
       else{
-        return callback(err);
+        return callback(data.Error);
       }
     }, function(err){
       return callback(err);
     });
+  }
+
+  function initConvo(partner, callback){
+    if(!(partner in $scope.messagePartners)){
+      $scope.messagePartners[partner] = {Username: partner, Messages: []};
+      getKey(partner, function(err){
+        if(err){
+          return callback(err);
+        }
+        else {
+          return callback();
+        }
+      });
+    }
+    else{
+      return callback();
+    }
   }
 
   $scope.isActive=function(username){
@@ -52,25 +69,28 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
   };
 
   $scope.sendMessage = function(){
-    ipc.send('encrypt-request', $scope.chatInput.Text, $scope.messagePartners[$scope.focus].PublicKey, $scope.focus);
+    ipc.send('encrypt-request', {Data: $scope.chatInput.Text, PublicKey: $scope.messagePartners[$scope.focus].PublicKey, To: $scope.focus});
     $scope.messagePartners[$scope.focus].Messages.push({From: authService.getUser().Username, Message: $scope.chatInput.Text});
     $scope.chatInput = {};
   };
 
   $scope.sendFile=function(file){
     var fname = file.replace(/(.*[/\\])?([^/\\.]+\.[a-zA-Z0-9.]*)$/mig, '$2');
+    console.log('sending file', fname);
     $scope.messagePartners[$scope.focus].Messages.push({From: authService.getUser().Username, Type: 'FILE', Message: 'sent file: '+ fname});
+    $scope.$apply();
     var fbuffer = fs.readFileSync(file);
     var fsize = fbuffer.length;
     var fid = uuid.v4();
     var pos = 0;
-    var psize = rsa.getMaxMessageSize();
+    var psize = 8*1024; // arbitrary 1KB packet size
     var totpieces = Math.ceil(fsize/psize);
     while(fbuffer.length>0){
       var packet = fbuffer.slice(0,psize);
       fbuffer = fbuffer.slice(psize,fbuffer.length);
-      var enc_pack = rsa.encryptFile(packet, $scope.messagePartners[$scope.focus].PublicKey);
-      ioclient.emit('filetransfer', {ID: fid, FileName:fname, FileSize: fsize, To: $scope.focus, Position: pos, Total: totpieces, Data: enc_pack.Data, Signature: enc_pack.Signature});
+      var envelope = {ID: fid, FileName:fname, FileSize: fsize, To: $scope.focus, Position: pos, Total: totpieces, Data: packet, PublicKey: $scope.messagePartners[$scope.focus].PublicKey};
+      console.log(envelope);
+      ipc.send('encrypt-request', envelope);
       pos++;
     }
   };
@@ -80,18 +100,15 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
   };
 
   $scope.openChat=function(friend){
-    if(!(friend.Username in $scope.messagePartners)){
-      $scope.messagePartners[friend.Username]={Username: friend.Username, Messages:[]};
-      getKey(friend.Username, function(err){
-        if(err){
-          console.log(err);
-        }
-        else{
-          $scope.focus = friend.Username;
-          $scope.messagePartners[$scope.focus].newMessage= false;
-        }
-      });
-    }
+    initConvo(friend.Username, function(err){
+      if(err){
+        console.log(err);
+      }
+      else{
+        $scope.focus = friend.Username;
+        $scope.messagePartners[$scope.focus].newMessage= false;
+      }
+    });
   };
 
   $scope.fileNameChanged = function(ele){
@@ -99,13 +116,31 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
     $scope.sendFile(file.path);
   };
 
+  $scope.downloadFile=function(ID){
+    var file = $scope.files[ID];
+    fs.writeFileSync('X:/tetufiles/'+file.FileName, file.Contents);
+  };
+
   ipc.on('encrypt-response', function(event, envelope){
-    ioclient.emit('message', {To:envelope.To, Message:envelope.Data, Signature: envelope.Signature, Key: envelope.Key});
+    if('FileName' in envelope){
+      ioclient.emit('filetransfer', envelope);
+    }
+    else{
+      ioclient.emit('message', {To:envelope.To, Message:envelope.Data, Signature: envelope.Signature, Key: envelope.Key});
+    }
   });
 
   ipc.on('decrypt-response', function(event, res){
-    console.log(res);
-    $scope.messagePartners[res.From].Messages.push({From: res.From, Message: res.Data});
+    if('FileName' in res){
+      $scope.files[res.ID].Contents[res.Position] = new Buffer(res.Data);
+      $scope.files[res.ID].Progress = (($scope.files[res.ID].Contents.length/$scope.files[res.ID].Total)*100);
+      if($scope.files[res.ID].Contents.length == $scope.files[res.ID].Total){
+        $scope.files[res.ID]= {FileName: $scope.files[res.ID].FileName, Contents: Buffer.concat($scope.files[res.ID].Contents, res.FileSize), Status:'DONE'};
+      }
+    }
+    else{
+      $scope.messagePartners[res.From].Messages.push({From: res.From, Message: res.Data});
+    }
     if(res.From !== $scope.focus){
       $scope.messagePartners[res.From].newMessage= true;
     }
@@ -114,39 +149,37 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
 
   ioclient.on('message', function(data){
     var author = data.From;
-    console.log(author);
-    if(!(author in $scope.messagePartners)){
-      $scope.messagePartners[author] = {Username: author, Messages: []};
-      getKey(author, function(err){
-        if(err){
-          console.log(err);
-        }
-        else {
-          ipc.send('decrypt-request', {Data: data.Message, Signature: data.Signature, Key:data.Key, From:author, PublicKey:$scope.messagePartners[author].PublicKey});
-        }
-      });
-    }
+    initConvo(author, function(err){
+      if(err){
+        console.log(err);
+      }
+      else{
+        ipc.send('decrypt-request', {Data: data.Message, Signature: data.Signature, Key:data.Key, From:author, PublicKey:$scope.messagePartners[author].PublicKey});
+      }
+    });
   });
 
   ioclient.on('filetransfer', function(data){
-    if(!(data.ID in $scope.files)){
-      $scope.files[data.ID]= {
-        ID: data.ID,
-        FileName: data.FileName,
-        FileSize: data.FileSize,
-        Total : data.Total,
-        Progress: 0,
-        Status: 'IN PROGRESS',
-        Contents : []
-      };
-      $scope.messagePartners[data.From].Messages.push({From: data.From, Type: 'FILE', ID:data.ID});
-    }
-    $scope.files[data.ID].Contents[data.Position] = rsa.decryptFile({Data: data.Data, Signature: data.Signature});
-    $scope.files[data.ID].Progress = (($scope.files[data.ID].Contents.length/$scope.files[data.ID].Total)*100);
-    if($scope.files[data.ID].Contents.length == $scope.files[data.ID].Total){
-      $scope.files[data.ID]= {FileName: $scope.files[data.ID].FileName, Contents: Buffer.concat($scope.files[data.ID].Contents, data.FileSize), Status:'DONE'};
-    }
-    $scope.$apply();
+    initConvo(data.From, function(err){
+      if(err){
+        console.log(err);
+      }
+      if(!(data.ID in $scope.files)){
+        $scope.files[data.ID]= {
+          ID: data.ID,
+          FileName: data.FileName,
+          FileSize: data.FileSize,
+          Total : data.Total,
+          Progress: 0,
+          Status: 'IN PROGRESS',
+          Contents : []
+        };
+        $scope.messagePartners[data.From].Messages.push({From: data.From, Type: 'FILE', ID:data.ID});
+        $scope.$apply();
+      }
+      data.PublicKey = $scope.messagePartners[data.From].PublicKey;
+      ipc.send('decrypt-request', JSON.parse(JSON.stringify(data)));
+    });
   });
 
   ioclient.on('friendsupdate', function(data){

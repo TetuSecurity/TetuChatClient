@@ -11,11 +11,11 @@ window.onload = function () {
     ipc.send('encrypt-response', envelope);
   });
 
-  ipc.on('decrypt-request', function(event, data, signature, enckey, author){
-    if(encryption.verify(data, signature, author.Key)){
-      var deckey = encryption.RSAdecrypt(enckey);
-      var dec = encryption.decrypt(data, deckey);
-      ipc.send('decrypt-response', {Data: dec, From:author.Username});
+  ipc.on('decrypt-request', function(event, envelope){
+    if(encryption.verify(envelope.Data, envelope.Signature, envelope.PublicKey)){
+      var deckey = encryption.RSAdecrypt(envelope.Key);
+      var dec = encryption.decrypt(envelope.Data, deckey);
+      ipc.send('decrypt-response', {Data: dec, From:envelope.From});
     }
     else{
       ipc.send('decrypt-response', {Data: 'Invalid Signature!', From:'SYSTEM MESSAGE'});

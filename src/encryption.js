@@ -11,13 +11,16 @@ module.exports={
     return keys.public;
   },
   encrypt: function (data){
-    var aeskey = crypto.randomBytes(256).toString('hex');
+    var aeskey = crypto.randomBytes(128).toString('hex');
     var cipher = crypto.createCipher('aes256', aeskey);
-    var enc = cipher.update(data);
+    var enc = cipher.update(data, 'utf8', 'hex');
     enc += cipher.final('hex');
     return {Key: aeskey, Data: enc};
   },
   RSAencrypt: function(data, key){
+    if(!Buffer.isBuffer(data)){
+      data = new Buffer(data);
+    }
     return crypto.publicEncrypt(key, data);
   },
   decrypt: function(enc_data, aeskey){
@@ -27,6 +30,9 @@ module.exports={
     return dec;
   },
   RSAdecrypt: function(data){
+    if(!Buffer.isBuffer(data)){
+      data = new Buffer(data);
+    }
     return crypto.privateDecrypt(keys.private, data);
   },
   sign: function(data){

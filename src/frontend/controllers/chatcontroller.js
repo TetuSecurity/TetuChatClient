@@ -40,9 +40,6 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
     ipc.send('encrypt-request', $scope.chatInput.Text, $scope.messagePartners[$scope.focus].PublicKey, $scope.focus);
     $scope.messagePartners[$scope.focus].Messages.push({From: authService.getUser().Username, Message: $scope.chatInput.Text});
     $scope.chatInput = {};
-    ipc.on('encrypt-response', function(event, envelope){
-      ioclient.emit('message', {To:envelope.To, Message:envelope.Data, Signature: envelope.Signature});
-    });
   };
 
   $scope.sendFile=function(file){
@@ -81,6 +78,19 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
     $scope.sendFile(file.path);
   };
 
+  ipc.on('encrypt-response', function(event, envelope){
+    ioclient.emit('message', {To:envelope.To, Message:envelope.Data, Signature: envelope.Signature, Key: envelope.Key});
+  });
+
+  ipc.on('decrypt-response', function(event, res){
+    console.log(res);
+    $scope.messagePartners[res.From].Messages.push({From: res.From, Message: res.Data});
+    if(res.From !== $scope.focus){
+      $scope.messagePartners[res.From].newMessage= true;
+    }
+    $scope.$apply();
+  });
+
   ioclient.on('getKeyResponse', function(data){
     if(data.Error){
       console.log(data.Error);
@@ -98,19 +108,12 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
 
   ioclient.on('message', function(data){
     var author = data.From;
+    console.log(author);
     if(!(author in $scope.messagePartners)){
       $scope.messagePartners[author] = {Username: author, Messages: []};
       ioclient.emit('getKey', data.From);
     }
-    ipc.send('decrypt-request', data.Message, data.Signature, data.Key, {Username: author, Key:$scope.messagePartners[$scope.focus].PublicKey});
-    ipc.on('decrypt-response', function(event, res){
-      console.log(res);
-      $scope.messagePartners[res.From].Messages.push({From: res.From, Message: res.Data});
-      if(res.From !== $scope.focus){
-        $scope.messagePartners[res.From].newMessage= true;
-      }
-      $scope.$apply();
-    });
+    ipc.send('decrypt-request', {Data: data.Message, Signature: data.Signature, Key:data.Key, From:author, PublicKey:$scope.messagePartners[author].PublicKey});
   });
 
   ioclient.on('filetransfer', function(data){

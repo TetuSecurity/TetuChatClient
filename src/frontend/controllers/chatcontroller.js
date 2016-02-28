@@ -1,4 +1,4 @@
-app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
+app.controller('ChatCtrl', function ($scope, $http, authService) {
   var remote = require('electron').remote;
   var ipc = require("electron").ipcRenderer;
   var fs = require('fs');
@@ -24,6 +24,21 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
       else{
         console.log(data);
       }
+    });
+  }
+
+  function getKey(username, callback){
+    $http.get('https://chatserv1.tetusecurity.com:4321/key/'+username).then(function(res){
+      var data = res.data;
+      if(data.Success){
+        $scope.messagePartners[data.Username].PublicKey= data.Key;
+        return callback();
+      }
+      else{
+        return callback(err);
+      }
+    }, function(err){
+      return callback(err);
     });
   }
 
@@ -67,10 +82,16 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
   $scope.openChat=function(friend){
     if(!(friend.Username in $scope.messagePartners)){
       $scope.messagePartners[friend.Username]={Username: friend.Username, Messages:[]};
-      ioclient.emit('getKey', friend.Username);
+      getKey(friend.Username, function(err){
+        if(err){
+          console.log(err);
+        }
+        else{
+          $scope.focus = friend.Username;
+          $scope.messagePartners[$scope.focus].newMessage= false;
+        }
+      });
     }
-    $scope.focus = friend.Username;
-    $scope.messagePartners[$scope.focus].newMessage= false;
   };
 
   $scope.fileNameChanged = function(ele){
@@ -91,29 +112,20 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
     $scope.$apply();
   });
 
-  ioclient.on('getKeyResponse', function(data){
-    if(data.Error){
-      console.log(data.Error);
-    }
-    else if(data.Success){
-      if(data.Username in $scope.messagePartners){
-        $scope.messagePartners[data.Username].PublicKey= data.Key;
-      }
-      $scope.$apply();
-    }
-    else{
-      console.log(data);
-    }
-  });
-
   ioclient.on('message', function(data){
     var author = data.From;
     console.log(author);
     if(!(author in $scope.messagePartners)){
       $scope.messagePartners[author] = {Username: author, Messages: []};
-      ioclient.emit('getKey', data.From);
+      getKey(author, function(err){
+        if(err){
+          console.log(err);
+        }
+        else {
+          ipc.send('decrypt-request', {Data: data.Message, Signature: data.Signature, Key:data.Key, From:author, PublicKey:$scope.messagePartners[author].PublicKey});
+        }
+      });
     }
-    ipc.send('decrypt-request', {Data: data.Message, Signature: data.Signature, Key:data.Key, From:author, PublicKey:$scope.messagePartners[author].PublicKey});
   });
 
   ioclient.on('filetransfer', function(data){

@@ -10,17 +10,6 @@ module.exports={
   getPublicKey: function(){
     return keys.public;
   },
-  saveKeys: function(filepath, password){
-    try{
-      var cipher = crypto.createCipher('aes256', password);
-      enckeys = cipher.update(JSON.stringify(keys));
-      enckeys += cipher.final();
-      fs.writeFileSync(filepath, enckeys);
-    } catch(error){
-      return false;
-    }
-    return true;
-  },
   encrypt: function (data){
     var aeskey = crypto.randomBytes(256).toString('hex');
     var cipher = crypto.createCipher('aes256', aeskey);
@@ -48,14 +37,25 @@ module.exports={
   verify: function(data, signature, publickey){
     var verify = crypto.createVerify('RSA-SHA512');
     verify.update(data);
-    return verify.verify(publickey, signature);
+    return verify.verify(publickey, signature, 'hex');
+  },
+  saveKeys: function(filepath, password){
+    try{
+      var cipher = crypto.createCipher('aes256', password);
+      enckeys = cipher.update(JSON.stringify(keys), 'utf8', 'hex');
+      enckeys += cipher.final('hex');
+      fs.writeFileSync(filepath, enckeys);
+    } catch(error){
+      return false;
+    }
+    return true;
   },
   loadkeys: function(keypath, password){
     try{
       var enc_keys = fs.readFileSync(keypath).toString();
       var decipher = crypto.createDecipher('aes256', password);
-      var kobj = decipher.update(enc_keys);
-      kobj += decipher.final();
+      var kobj = decipher.update(enc_keys,  'hex', 'utf8');
+      kobj += decipher.final('utf8');
       keys = JSON.parse(kobj);
     } catch(error){
       return false;
@@ -64,6 +64,9 @@ module.exports={
   },
   genkey: function(){
     try{
+      if(!keypair){
+        keypair = require('keypair');
+      }
       keys = keypair({bits:4096});
     } catch(error){
       return false;

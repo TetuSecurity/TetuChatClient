@@ -12,6 +12,10 @@
               <span class="input-group-addon authinput" id="Username"><b>Username</b></span>
               <input type="text" class="form-control" placeholder="Username" name="Username" ng-model="auth.Username" required />
             </div>
+            <div class="input-group form-group">
+              <span class="input-group-addon authinput" id="Password"><b>Password</b></span>
+              <input type="password" class="form-control" placeholder="Password" name="Password" ng-model="auth.Password" required />
+            </div>
             <div class="input-group form-group" ng-show="isLoggingIn">
               <span class="input-group-addon authinput" id="Username"><b>Load a Key</b></span>
               <input type="file" class="form-control" onchange="angular.element(this).scope().fileNameChanged(this)" required />

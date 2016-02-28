@@ -102,7 +102,7 @@ app.controller('ChatCtrl', function ($scope, $interval, $timeout, authService) {
       $scope.messagePartners[author] = {Username: author, Messages: []};
       ioclient.emit('getKey', data.From);
     }
-    ipc.send('decrypt-request', data.Message, data.Signature, author);
+    ipc.send('decrypt-request', data.Message, data.Signature, data.Key, {Username: author, Key:$scope.messagePartners[$scope.focus].PublicKey});
     ipc.on('decrypt-response', function(event, res){
       console.log(res);
       $scope.messagePartners[res.From].Messages.push({From: res.From, Message: res.Data});

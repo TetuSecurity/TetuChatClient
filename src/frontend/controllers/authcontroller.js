@@ -37,7 +37,7 @@ app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn
 
 	$scope.fileNameChanged = function(ele){
 		var file = ele.files[0];
-		$scope.auth.PrivateKey = file.path;
+		$scope.auth.Keyfile = file.path;
 	};
 
 });

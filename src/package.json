@@ -22,6 +22,7 @@
     "asn1": "^0.2.3",
     "cryptico": "^1.0.2",
     "jquery": "^2.2.0",
+    "keypair": "^1.0.0",
     "node-rsa": "^0.2.26",
     "node-uuid": "^1.4.7",
     "socket.io-client": "^1.4.0"

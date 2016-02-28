@@ -1,16 +1,24 @@
 var ipc = require('electron').ipcRenderer;
 var remote = require('electron').remote;
-var RSA = remote.require('./rsa-engine');
+var encryption = remote.require('./encryption');
 
 window.onload = function () {
 	ipc.on('encrypt-request', function(event, data, key, to){
-    var enc = RSA.encrypt(data, key);
-    var envelope = {Data: enc.Data, Signature: enc.Signature, To: to};
+    var enc_obj = encryption.encrypt(data);
+    var enckey = encryption.RSAencrypt(enc_obj.Key, key);
+    var sig = encryption.sign(enc_obj.Data);
+    var envelope = {Data: enc_obj.Data, Key: enckey, Signature: sig, To: to};
     ipc.send('encrypt-response', envelope);
   });
 
-  ipc.on('decrypt-request', function(event, data,  signature, author){
-    var dec = RSA.decrypt(data, signature);
-    ipc.send('decrypt-response', {Data: dec, From:author});
+  ipc.on('decrypt-request', function(event, data, signature, enckey, author){
+    if(encryption.verify(data, signature, author.Key)){
+      var deckey = encryption.RSAdecrypt(enckey);
+      var dec = encryption.decrypt(data, deckey);
+      ipc.send('decrypt-response', {Data: dec, From:author.Username});
+    }
+    else{
+      ipc.send('decrypt-response', {Data: 'Invalid Signature!', From:'SYSTEM MESSAGE'});
+    }
   });
 };

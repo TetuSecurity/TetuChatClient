@@ -33,19 +33,18 @@ function createBGWindow(){
 }
 
 app.on('ready', function() {
-  // Create the browser window.
   mainWindow = createMainWindow();
   bgWindow = createBGWindow();
 });
 
 //route events between frontend and background
 
-ipc.on('encrypt-request', function(event, data, key, to){
-  bgWindow.webContents.send('encrypt-request', data, key, to);
+ipc.on('encrypt-request', function(event, envelope){
+  bgWindow.webContents.send('encrypt-request', envelope);
 });
 
-ipc.on('decrypt-request', function(event, data, signature, author){
-  bgWindow.webContents.send('decrypt-request', data, signature, author);
+ipc.on('decrypt-request', function(event, envelope){
+  bgWindow.webContents.send('decrypt-request', envelope);
 });
 
 ipc.on('encrypt-response', function(event, payload){

@@ -25,4 +25,29 @@ window.onload = function () {
       ipc.send('decrypt-response', {Data: 'Invalid Signature!', From:'SYSTEM MESSAGE'});
     }
   });
+
+	ipc.on('login-request', function(event, creds){
+		if(encryption.loadkeys(creds.Keyfile, creds.Password)){
+			var sig = encryption.sign(creds.Username);
+			ipc.send('login-response', {Success: true, User: {Username:creds.Username, Signature:sig}});
+		}
+		else{
+			ipc.send('login-response', {Success: false, Error: 'Could not load Keys'});
+		}
+	});
+
+	ipc.on('register-request', function(event, creds){
+		if(encryption.genkey()){
+			if(encryption.saveKeys('./'+creds.Username.trim().replace(/\s+/ig, "-")+'.keys', creds.Password)){
+				ipc.send('register-response', {Success:true, User:{Username:creds.Username, PublicKey: encryption.getPublicKey()}});
+			}
+			else{
+				ipc.send('register-response', {Success:false, Error:'Failed to save keys'});
+			}
+		}
+		else{
+			ipc.send('register-response', {Success:false, Error:'Failed to generate RSA keypair'});
+		}
+	});
+
 };

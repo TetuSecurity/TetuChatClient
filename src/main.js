@@ -47,10 +47,26 @@ ipc.on('decrypt-request', function(event, envelope){
   bgWindow.webContents.send('decrypt-request', envelope);
 });
 
+ipc.on('login-request', function(event, envelope){
+  bgWindow.webContents.send('login-request', envelope);
+});
+
+ipc.on('register-request', function(event, envelope){
+  bgWindow.webContents.send('register-request', envelope);
+});
+
 ipc.on('encrypt-response', function(event, payload){
   mainWindow.webContents.send('encrypt-response', payload);
 });
 
 ipc.on('decrypt-response', function(event, payload){
   mainWindow.webContents.send('decrypt-response', payload);
+});
+
+ipc.on('login-response', function(event, payload){
+  mainWindow.webContents.send('login-response', payload);
+});
+
+ipc.on('register-response', function(event, payload){
+  mainWindow.webContents.send('register-response', payload);
 });

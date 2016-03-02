@@ -1,36 +1,21 @@
 app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn) {
+  var remote = require('electron').remote;
+  var ioclient = remote.require('./sockets');
   $scope.isLoggingIn = isLoggingIn;
-
 	$scope.auth= {};
 
 	$scope.login=function(){
-		authService.logIn($scope.auth,function(err, res){
-			if(err){
-				console.log(err);
-			}
-			else if(res){
-				$location.path('/');
-				$scope.$apply();
-			}
-			else{
-				console.log(res);
-				//display error
-			}
-		});
+		authService.logIn($scope.auth, function(err){
+      if(err){
+        console.log(err);
+      }
+    });
 	};
 
 	$scope.register=function(){
-		authService.signUp($scope.auth, function(err, res){
+		authService.signUp($scope.auth, function(err){
 			if(err){
 				console.log(err);
-			}
-			else if(res){
-				$location.path('/');
-				$scope.$apply();
-			}
-			else{
-				console.log(res);
-				//display error
 			}
 		});
 	};
@@ -39,5 +24,27 @@ app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn
 		var file = ele.files[0];
 		$scope.auth.Keyfile = file.path;
 	};
+
+  ioclient.on('loginResponse', function(data){
+    if(data.Success){
+      authService.saveUser(data.Username);
+      $location.path('/');
+      $scope.$apply();
+    }
+    else{
+      console.log(data.Error);
+    }
+  });
+
+  ioclient.on('registerResponse', function(data){
+    if(data.Success){
+      authService.saveUser(data.Username);
+      $location.path('/');
+      $scope.$apply();
+    }
+    else{
+      console.log(data.Error);
+    }
+  });
 
 });

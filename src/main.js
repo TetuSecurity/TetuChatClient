@@ -24,8 +24,8 @@ function createMainWindow(){
 
 function createBGWindow(){
   const win = new BrowserWindow({
-    //width: 400,
-    //height: 200
+    //width: 800,
+    //height: 600
     show:false
   });
   win.loadURL('file://' + __dirname + '/background/index.html');

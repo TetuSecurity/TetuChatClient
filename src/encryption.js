@@ -13,7 +13,7 @@ module.exports={
   encrypt: function (data){
     var aeskey = crypto.randomBytes(128).toString('hex');
     var cipher = crypto.createCipher('aes256', aeskey);
-    var enc = cipher.update(data, 'utf8', 'hex');
+    var enc = cipher.update(data, null, 'hex');
     enc += cipher.final('hex');
     return {Key: aeskey, Data: enc};
   },
@@ -25,9 +25,9 @@ module.exports={
   },
   decrypt: function(enc_data, aeskey){
     var decipher = crypto.createDecipher('aes256', aeskey);
-    var dec = decipher.update(enc_data, 'hex', 'utf8');
-    dec += decipher.final('utf8');
-    return dec;
+    var dec = decipher.update(enc_data, 'hex');
+    data = Buffer.concat([dec, decipher.final()]);
+    return data;
   },
   RSAdecrypt: function(data){
     if(!Buffer.isBuffer(data)){

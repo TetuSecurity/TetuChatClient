@@ -69,7 +69,7 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
   };
 
   $scope.sendMessage = function(){
-    ipc.send('encrypt-request', {Data: $scope.chatInput.Text, PublicKey: $scope.messagePartners[$scope.focus].PublicKey, To: $scope.focus});
+    ipc.send('encrypt-request', {Data: new Buffer($scope.chatInput.Text), PublicKey: $scope.messagePartners[$scope.focus].PublicKey, To: $scope.focus});
     $scope.messagePartners[$scope.focus].Messages.push({From: authService.getUser().Username, Message: $scope.chatInput.Text});
     $scope.chatInput = {};
   };
@@ -89,7 +89,6 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
       var packet = fbuffer.slice(0,psize);
       fbuffer = fbuffer.slice(psize,fbuffer.length);
       var envelope = {ID: fid, FileName:fname, FileSize: fsize, To: $scope.focus, Position: pos, Total: totpieces, Data: packet, PublicKey: $scope.messagePartners[$scope.focus].PublicKey};
-      console.log(envelope);
       ipc.send('encrypt-request', envelope);
       pos++;
     }
@@ -132,14 +131,14 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
 
   ipc.on('decrypt-response', function(event, res){
     if('FileName' in res){
-      $scope.files[res.ID].Contents[res.Position] = new Buffer(res.Data);
+      $scope.files[res.ID].Contents[res.Position] = res.Data;
       $scope.files[res.ID].Progress = (($scope.files[res.ID].Contents.length/$scope.files[res.ID].Total)*100);
       if($scope.files[res.ID].Contents.length == $scope.files[res.ID].Total){
         $scope.files[res.ID]= {FileName: $scope.files[res.ID].FileName, Contents: Buffer.concat($scope.files[res.ID].Contents, res.FileSize), Status:'DONE'};
       }
     }
     else{
-      $scope.messagePartners[res.From].Messages.push({From: res.From, Message: res.Data});
+      $scope.messagePartners[res.From].Messages.push({From: res.From, Message: res.Data.toString('utf8')});
     }
     if(res.From !== $scope.focus){
       $scope.messagePartners[res.From].newMessage= true;

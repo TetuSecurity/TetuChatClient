@@ -8,7 +8,7 @@ var nano        = require('gulp-cssnano');
 var ngAnnotate  = require('gulp-ng-annotate');
 var usemin      = require('gulp-usemin');
 var electron    = require('gulp-electron');
-var packageJson = require('./package.json');
+var packageJson = require('./src/package.json');
 
 // Lint Task
 gulp.task('lint', function() {

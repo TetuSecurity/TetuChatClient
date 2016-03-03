@@ -7,6 +7,26 @@ html{
   overflow:hidden;
 }
 
+.cover{
+  position:absolute;
+  z-index: 1000;
+  width:100%;
+  height:100%;
+  top:0;
+  left:0;
+  background-color: rgba(20, 20, 20, 0.81);
+}
+
+.loadingScreen{
+  position:absolute;
+  z-index: 1000;
+  width:80%;
+  height:96%;
+  top:2%;
+  left:10%;
+  background-color: #141414;
+}
+
 #chatwindow{
   margin-left:0;
   padding-left: 0px;

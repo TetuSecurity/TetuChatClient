@@ -83,7 +83,7 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
     var fsize = fbuffer.length;
     var fid = uuid.v4();
     var pos = 0;
-    var psize = 8*1024; // arbitrary 1KB packet size
+    var psize = 8*8*1024; // arbitrary 8KB packet size
     var totpieces = Math.ceil(fsize/psize);
     while(fbuffer.length>0){
       var packet = fbuffer.slice(0,psize);

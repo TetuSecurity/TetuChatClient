@@ -12,7 +12,7 @@ var packageJson = require('./src/package.json');
 
 // Lint Task
 gulp.task('lint', function() {
-    return gulp.src(['src/**/*.js','!src/**/lib/**/*'])
+    return gulp.src(['src/**/*.js','!src/**/lib/**/*', '!src/node_modules/**/*'])
         .pipe(jshint())
         .pipe(jshint.reporter('default'));
 });

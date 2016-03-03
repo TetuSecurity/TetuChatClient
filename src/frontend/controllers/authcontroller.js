@@ -1,23 +1,30 @@
 app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn) {
   var remote = require('electron').remote;
-  var ioclient = remote.require('./sockets');
+  var ipc = require('electron').ipcRenderer;
+  var ioclient = remote.require('./sockets'); //replace with socket service
   $scope.isLoggingIn = isLoggingIn;
 	$scope.auth= {};
+  $scope.loading = false;
 
 	$scope.login=function(){
-		authService.logIn($scope.auth, function(err){
-      if(err){
-        console.log(err);
-      }
-    });
+    if($scope.auth && $scope.auth.Username && $scope.auth.Password && $scope.auth.Keyfile){
+      $scope.loading = true;
+      ipc.send('login-request', JSON.parse(JSON.stringify($scope.auth)));
+    }
+    else{
+      console.log('No Credentials provided');
+    }
 	};
 
 	$scope.register=function(){
-		authService.signUp($scope.auth, function(err){
-			if(err){
-				console.log(err);
-			}
-		});
+    if($scope.auth && $scope.auth.Username && $scope.auth.Password){
+      $scope.loading = true;
+      ipc.send('register-request', JSON.parse(JSON.stringify($scope.auth)));
+      console.log('registration job sent');
+    }
+    else{
+      console.log('No Provided Username');
+    }
 	};
 
 	$scope.fileNameChanged = function(ele){
@@ -25,26 +32,47 @@ app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn
 		$scope.auth.Keyfile = file.path;
 	};
 
-  ioclient.on('loginResponse', function(data){
-    if(data.Success){
-      authService.saveUser(data.Username);
-      $location.path('/');
-      $scope.$apply();
+  ipc.on('login-response', function(event, res){
+    if(res.Success){
+      ioclient.emit('login', res.User);
     }
     else{
-      console.log(data.Error);
+      console.log(res.Error);
     }
   });
 
-  ioclient.on('registerResponse', function(data){
+  ipc.on('register-response', function(event, res){
+    console.log('key generated');
+    if(res.Success){
+      ioclient.emit('register', res.User);
+    }
+    else{
+      console.log(err);
+    }
+  });
+
+  ioclient.on('loginResponse', function(data){
+    $scope.loading = false;
     if(data.Success){
       authService.saveUser(data.Username);
       $location.path('/');
-      $scope.$apply();
     }
     else{
       console.log(data.Error);
     }
+    $scope.$apply();
+  });
+
+  ioclient.on('registerResponse', function(data){
+    $scope.loading = false;
+    if(data.Success){
+      authService.saveUser(data.Username);
+      $location.path('/');
+    }
+    else{
+      console.log(data.Error);
+    }
+    $scope.$apply();
   });
 
 });

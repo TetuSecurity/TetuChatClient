@@ -1,6 +1,5 @@
 var ipc = require('electron').ipcRenderer;
-var remote = require('electron').remote;
-var encryption = remote.require('./encryption');
+var encryption = require('./encryption');
 
 window.onload = function () {
 	ipc.on('encrypt-request', function(event, envelope){

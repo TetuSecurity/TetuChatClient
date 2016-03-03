@@ -3,7 +3,7 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
   var ipc = require('electron').ipcRenderer;
   var fs = require('fs');
   var uuid = require('node-uuid');
-  var ioclient = remote.require('./sockets.js');
+  var ioclient = remote.require('./sockets.js'); //replace with socket service
   $scope.messagePartners = {};
   $scope.focus = null;
   $scope.friends = [];

@@ -37,6 +37,7 @@ app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn
       ioclient.emit('login', res.User);
     }
     else{
+      $scope.loading = false;
       console.log(res.Error);
     }
   });
@@ -47,6 +48,7 @@ app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn
       ioclient.emit('register', res.User);
     }
     else{
+      $scope.loading = false;
       console.log(err);
     }
   });

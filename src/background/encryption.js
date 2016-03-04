@@ -46,10 +46,13 @@ module.exports={
     return verify.verify(publickey, signature, 'hex');
   },
   saveKeys: function(filepath, password){
+    var hash = crypto.createHash('sha512');
+    hash.update(password, 'utf8');
+    var aeskey = hash.digest('hex');
+    var cipher = crypto.createCipher('aes256', aeskey);
+    enckeys = cipher.update(JSON.stringify(keys), 'utf8', 'hex');
+    enckeys += cipher.final('hex');
     try{
-      var cipher = crypto.createCipher('aes256', password);
-      enckeys = cipher.update(JSON.stringify(keys), 'utf8', 'hex');
-      enckeys += cipher.final('hex');
       fs.writeFileSync(filepath, enckeys);
     } catch(error){
       return false;
@@ -57,9 +60,12 @@ module.exports={
     return true;
   },
   loadkeys: function(keypath, password){
+    var hash = crypto.createHash('sha512');
+    hash.update(password, 'utf8');
+    var aeskey = hash.digest('hex');
     try{
       var enc_keys = fs.readFileSync(keypath).toString();
-      var decipher = crypto.createDecipher('aes256', password);
+      var decipher = crypto.createDecipher('aes256', aeskey);
       var kobj = decipher.update(enc_keys,  'hex', 'utf8');
       kobj += decipher.final('utf8');
       keys = JSON.parse(kobj);

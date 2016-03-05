@@ -26,7 +26,7 @@
         <div class="messageContents">
           <div class="sentfile" ng-if="m.Type==='FILE'">
             <p ng-if="files[m.ID].Status === 'IN PROGRESS'">Receiving file: {{files[m.ID].FileName}}</p>
-            <a href="javascript:void(0)" ng-if="files[m.ID].Status === 'DONE'" ng-click="downloadFile(m.ID)">{{files[m.ID].FileName}}</a>
+            <a ng-if="files[m.ID].Status === 'DONE'" href="javascript:void(0)" ng-click="saveFile(m.ID)">{{files[m.ID].FileName}}</a>
           </div>
           <p ng-if="m.Message">{{m.Message}}</p>
         </div>

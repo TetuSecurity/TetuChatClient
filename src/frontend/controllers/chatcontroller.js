@@ -1,4 +1,6 @@
 app.controller('ChatCtrl', function ($scope, $http, authService, socketService) {
+  var remote = require('remote');
+  var dialog = remote.require('dialog');
   var ipc = require('electron').ipcRenderer;
   var fs = require('fs');
   var uuid = require('node-uuid');
@@ -78,10 +80,6 @@ app.controller('ChatCtrl', function ($scope, $http, authService, socketService) 
     }
   };
 
-  $scope.clickFile =function(){
-    angular.element('#sendfile').trigger('click');
-  };
-
   $scope.openChat=function(friend){
     initConvo(friend.Username, function(err){
       if(err){
@@ -94,15 +92,39 @@ app.controller('ChatCtrl', function ($scope, $http, authService, socketService) 
     });
   };
 
-  $scope.fileNameChanged = function(ele){
-    var file = ele.files[0];
-    $scope.sendFile(file.path);
+  $scope.clickFile=function(){
+    dialog.showOpenDialog({title:'Choose a file', properties:['openFile']}, function(filenames){
+      if(filenames && filenames.length>0){
+        $scope.sendFile(filenames[0]);
+      }
+    });
   };
 
-  $scope.downloadFile=function(ID){
-    var file = $scope.files[ID];
-    fs.writeFileSync('X:/tetufiles/'+file.FileName, file.Contents);
+  $scope.saveFile=function(fileID){
+    if(fileID in $scope.files){
+      var file = $scope.files[fileID];
+      var ext = file.FileName.substring(file.FileName.lastIndexOf('.')+1);
+      dialog.showSaveDialog({
+        title:'Save As',
+        defaultPath:'./'+file.FileName,
+        filters:[
+          {name: 'All files', extensions:['*']},
+          {name: ext, extensions:[ext]}
+        ]
+      }, function(savepath){
+        if(savepath && savepath.length>0){
+          fs.writeFileSync(savepath, file.Contents);
+        }
+      });
+    }
+    else{
+      console.log('no such file');
+    }
   };
+
+/*
+  Background process events
+*/
 
   ipc.on('encrypt-response', function(event, envelope){
     if('FileName' in envelope){
@@ -129,6 +151,10 @@ app.controller('ChatCtrl', function ($scope, $http, authService, socketService) 
     }
     $scope.$apply();
   });
+
+/*
+  Socket events
+*/
 
   socketService.on('message', function(data){
     var author = data.From;

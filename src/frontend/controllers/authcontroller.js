@@ -1,4 +1,6 @@
 app.controller('AuthCtrl', function ($scope, $location, authService, socketService, isLoggingIn) {
+  var remote = require('remote');
+  var dialog = remote.require('dialog');
   var ipc = require('electron').ipcRenderer;
   $scope.isLoggingIn = isLoggingIn;
 	$scope.auth= {};
@@ -31,9 +33,12 @@ app.controller('AuthCtrl', function ($scope, $location, authService, socketServi
     }
 	};
 
-	$scope.fileNameChanged = function(ele){
-		var file = ele.files[0];
-		$scope.auth.Keyfile = file.path;
+	$scope.pickKey=function(){
+    dialog.showOpenDialog({title: 'Load a keyfile', filters:[{name:'Keys', extensions:['KEYS']}], properties:['openFile']},function (filenames) {
+      if(filenames && filenames.length>0){
+        $scope.auth.Keyfile = filenames[0];
+      }
+    });
 	};
 
   ipc.on('login-response', function(event, res){

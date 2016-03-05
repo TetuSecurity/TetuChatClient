@@ -37,8 +37,8 @@ app.on('ready', function() {
   bgWindow = createBGWindow();
 });
 
-//route events between frontend and background
 
+//route events between frontend and background
 ipc.on('encrypt-request', function(event, envelope){
   bgWindow.webContents.send('encrypt-request', envelope);
 });

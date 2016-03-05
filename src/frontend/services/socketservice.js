@@ -36,7 +36,6 @@ app.factory('socketService', function(){
     emit:function(channel, data){
       if(socket){
         socket.emit(channel, data);
-        console.log('emitted', data);
       }
       else{
         console.log('socket is not connected');

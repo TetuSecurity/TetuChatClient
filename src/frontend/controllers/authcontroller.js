@@ -39,7 +39,6 @@ app.controller('AuthCtrl', function ($scope, $location, authService, socketServi
   ipc.on('login-response', function(event, res){
     if(res.Success){
       socketService.once('loginResponse', function(data){
-        console.log(data);
         $scope.loading = false;
         if(data.Success){
           authService.saveUser(data.Username);

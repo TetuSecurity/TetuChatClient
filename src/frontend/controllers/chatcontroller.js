@@ -1,9 +1,7 @@
-app.controller('ChatCtrl', function ($scope, $http, authService) {
-  var remote = require('electron').remote;
+app.controller('ChatCtrl', function ($scope, $http, authService, socketService) {
   var ipc = require('electron').ipcRenderer;
   var fs = require('fs');
   var uuid = require('node-uuid');
-  var ioclient = remote.require('./sockets.js'); //replace with socket service
   $scope.messagePartners = {};
   $scope.focus = null;
   $scope.friends = [];
@@ -12,23 +10,11 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
 
 
   function getFriends(){
-    ioclient.emit('getFriends', authService.getUser().Username);
-    ioclient.on('getFriendsResponse', function(data){
-      if(data.Error){
-        console.log(data.Error);
-      }
-      else if(data.Success){
-        $scope.friends= data.Friends;
-        $scope.$apply();
-      }
-      else{
-        console.log(data);
-      }
-    });
+    socketService.emit('getFriends', authService.getUser().Username);
   }
 
   function getKey(username, callback){
-    $http.get('https://chatserv1.tetusecurity.com:4321/key/'+username).then(function(res){
+    $http.get(socketService.getTarget()+'key/'+username).then(function(res){
       var data = res.data;
       if(data.Success){
         $scope.messagePartners[data.Username].PublicKey= data.Key;
@@ -82,15 +68,13 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
     var fbuffer = fs.readFileSync(file);
     var fsize = fbuffer.length;
     var fid = uuid.v4();
-    var pos = 0;
     var psize = 8*8*1024; // arbitrary 8KB packet size
     var totpieces = Math.ceil(fsize/psize);
-    while(fbuffer.length>0){
+    for(var pos=0; pos<totpieces; pos++){
       var packet = fbuffer.slice(0,psize);
       fbuffer = fbuffer.slice(psize,fbuffer.length);
       var envelope = {ID: fid, FileName:fname, FileSize: fsize, To: $scope.focus, Position: pos, Total: totpieces, Data: packet, PublicKey: $scope.messagePartners[$scope.focus].PublicKey};
       ipc.send('encrypt-request', envelope);
-      pos++;
     }
   };
 
@@ -122,10 +106,10 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
 
   ipc.on('encrypt-response', function(event, envelope){
     if('FileName' in envelope){
-      ioclient.emit('filetransfer', envelope);
+      socketService.emit('filetransfer', envelope);
     }
     else{
-      ioclient.emit('message', {To:envelope.To, Message:envelope.Data, Signature: envelope.Signature, Key: envelope.Key});
+      socketService.emit('message', {To:envelope.To, Message:envelope.Data, Signature: envelope.Signature, Key: envelope.Key});
     }
   });
 
@@ -146,7 +130,7 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
     $scope.$apply();
   });
 
-  ioclient.on('message', function(data){
+  socketService.on('message', function(data){
     var author = data.From;
     initConvo(author, function(err){
       if(err){
@@ -158,7 +142,7 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
     });
   });
 
-  ioclient.on('filetransfer', function(data){
+  socketService.on('filetransfer', function(data){
     initConvo(data.From, function(err){
       if(err){
         console.log(err);
@@ -181,8 +165,21 @@ app.controller('ChatCtrl', function ($scope, $http, authService) {
     });
   });
 
-  ioclient.on('friendsupdate', function(data){
+  socketService.on('friendsupdate', function(data){
     getFriends();
+  });
+
+  socketService.on('getFriendsResponse', function(data){
+    if(data.Error){
+      console.log(data.Error);
+    }
+    else if(data.Success){
+      $scope.friends= data.Friends;
+      $scope.$apply();
+    }
+    else{
+      console.log(data);
+    }
   });
 
   getFriends();

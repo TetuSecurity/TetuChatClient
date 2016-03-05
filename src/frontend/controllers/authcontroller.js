@@ -1,14 +1,15 @@
-app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn) {
-  var remote = require('electron').remote;
+app.controller('AuthCtrl', function ($scope, $location, authService, socketService, isLoggingIn) {
   var ipc = require('electron').ipcRenderer;
-  var ioclient = remote.require('./sockets'); //replace with socket service
   $scope.isLoggingIn = isLoggingIn;
 	$scope.auth= {};
   $scope.loading = false;
 
 	$scope.login=function(){
-    if($scope.auth && $scope.auth.Username && $scope.auth.Password && $scope.auth.Keyfile){
+    if($scope.auth && $scope.auth.Server && $scope.auth.Username && $scope.auth.Password && $scope.auth.Keyfile){
       $scope.loading = true;
+      if(!socketService.isConnected()){
+        socketService.connect($scope.auth.Server);
+      }
       ipc.send('login-request', JSON.parse(JSON.stringify($scope.auth)));
     }
     else{
@@ -17,8 +18,11 @@ app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn
 	};
 
 	$scope.register=function(){
-    if($scope.auth && $scope.auth.Username && $scope.auth.Password){
+    if($scope.auth && $scope.auth.Server && $scope.auth.Username && $scope.auth.Password){
       $scope.loading = true;
+      if(!socketService.isConnected()){
+        socketService.connect($scope.auth.Server);
+      }
       ipc.send('register-request', JSON.parse(JSON.stringify($scope.auth)));
       console.log('registration job sent');
     }
@@ -34,7 +38,19 @@ app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn
 
   ipc.on('login-response', function(event, res){
     if(res.Success){
-      ioclient.emit('login', res.User);
+      socketService.once('loginResponse', function(data){
+        console.log(data);
+        $scope.loading = false;
+        if(data.Success){
+          authService.saveUser(data.Username);
+          $location.path('/');
+        }
+        else{
+          console.log(data.Error);
+        }
+        $scope.$apply();
+      });
+      socketService.emit('login', res.User);
     }
     else{
       $scope.loading = false;
@@ -43,38 +59,24 @@ app.controller('AuthCtrl', function ($scope, $location, authService, isLoggingIn
   });
 
   ipc.on('register-response', function(event, res){
-    console.log('key generated');
     if(res.Success){
-      ioclient.emit('register', res.User);
+      socketService.once('registerResponse', function(data){
+        $scope.loading = false;
+        if(data.Success){
+          authService.saveUser(data.Username);
+          $location.path('/');
+        }
+        else{
+          console.log(data.Error);
+        }
+        $scope.$apply();
+      });
+      socketService.emit('register', res.User);
     }
     else{
       $scope.loading = false;
       console.log(err);
     }
-  });
-
-  ioclient.on('loginResponse', function(data){
-    $scope.loading = false;
-    if(data.Success){
-      authService.saveUser(data.Username);
-      $location.path('/');
-    }
-    else{
-      console.log(data.Error);
-    }
-    $scope.$apply();
-  });
-
-  ioclient.on('registerResponse', function(data){
-    $scope.loading = false;
-    if(data.Success){
-      authService.saveUser(data.Username);
-      $location.path('/');
-    }
-    else{
-      console.log(data.Error);
-    }
-    $scope.$apply();
   });
 
 });

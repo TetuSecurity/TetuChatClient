@@ -9,10 +9,16 @@ app.controller('AuthCtrl', function ($scope, $location, authService, socketServi
 	$scope.login=function(){
     if($scope.auth && $scope.auth.Server && $scope.auth.Username && $scope.auth.Password && $scope.auth.Keyfile){
       $scope.loading = true;
-      if(!socketService.isConnected()){
-        socketService.connect($scope.auth.Server);
-      }
-      ipc.send('login-request', JSON.parse(JSON.stringify($scope.auth)));
+      socketService.connect($scope.auth.Server, function(err){
+        if(err){
+          $scope.loading = false;
+          console.log('Could not connect');
+          $scope.$apply();
+        }
+        else{
+          ipc.send('login-request', JSON.parse(JSON.stringify($scope.auth)));
+        }
+      });
     }
     else{
       console.log('No Credentials provided');
@@ -22,11 +28,16 @@ app.controller('AuthCtrl', function ($scope, $location, authService, socketServi
 	$scope.register=function(){
     if($scope.auth && $scope.auth.Server && $scope.auth.Username && $scope.auth.Password){
       $scope.loading = true;
-      if(!socketService.isConnected()){
-        socketService.connect($scope.auth.Server);
-      }
-      ipc.send('register-request', JSON.parse(JSON.stringify($scope.auth)));
-      console.log('registration job sent');
+      socketService.connect($scope.auth.Server, function(err){
+        if(err){
+          $scope.loading = false;
+          console.log('Could not connect');
+          $scope.$apply();
+        }
+        else{
+          ipc.send('register-request', JSON.parse(JSON.stringify($scope.auth)));
+        }
+      });
     }
     else{
       console.log('No Provided Username');

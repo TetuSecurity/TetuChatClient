@@ -9,7 +9,7 @@ app.controller('AuthCtrl', function ($scope, $location, authService, socketServi
 	$scope.login=function(){
     if($scope.auth && $scope.auth.Server && $scope.auth.Username && $scope.auth.Password && $scope.auth.Keyfile){
       $scope.loading = true;
-      socketService.connect($scope.auth.Server, function(err){
+      socketService.connect($scope.auth.Server, function(err, handshake){
         if(err){
           $scope.loading = false;
           console.log('Could not connect');

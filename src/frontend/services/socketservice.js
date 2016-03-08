@@ -30,6 +30,9 @@ app.factory('socketService', function(){
         return callback();
       });
     },
+    disconnect:function(){
+      socket.disconnect();
+    },
     on:function(channel, callback){
       if(socket){
         socket.on(channel, function(data){

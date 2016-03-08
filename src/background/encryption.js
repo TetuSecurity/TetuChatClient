@@ -45,6 +45,11 @@ module.exports={
     verify.update(data);
     return verify.verify(publickey, signature, 'hex');
   },
+  hash: function(data){
+    var hash = crypto.createHash('sha512');
+    hash.update(data);
+    return hash.digest('hex');
+  },
   saveKeys: function(filepath, password){
     var hash = crypto.createHash('sha512');
     hash.update(password, 'utf8');

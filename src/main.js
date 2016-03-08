@@ -55,6 +55,22 @@ ipc.on('register-request', function(event, envelope){
   bgWindow.webContents.send('register-request', envelope);
 });
 
+ipc.on('hash-request', function(event, envelope){
+  bgWindow.webContents.send('hash-request', envelope);
+});
+
+ipc.on('verify-request', function(event, envelope){
+  bgWindow.webContents.send('verify-request', envelope);
+});
+
+ipc.on('verify-response', function(event, payload){
+  mainWindow.webContents.send('verify-response', payload);
+});
+
+ipc.on('hash-response', function(event, payload){
+  mainWindow.webContents.send('hash-response', payload);
+});
+
 ipc.on('encrypt-response', function(event, payload){
   mainWindow.webContents.send('encrypt-response', payload);
 });

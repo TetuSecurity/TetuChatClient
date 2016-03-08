@@ -49,4 +49,14 @@ window.onload = function () {
 		}
 	});
 
+	ipc.on('hash-request', function(event, data){
+		data.Hash = encryption.hash(data.Data);
+		ipc.send('hash-response', data);
+	});
+
+	ipc.on('verify-request', function(event, data){
+		data.Verified = encryption.verify(data.Data, Data.Signature, Data.PublicKey);
+		ipc.send('verify-response', data);
+	});
+
 };

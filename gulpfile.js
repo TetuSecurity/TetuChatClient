@@ -64,11 +64,11 @@ gulp.task('build-exe', ['usemin', 'copy_node', 'copy_fonts', 'lint', 'npm'], fun
       packageJson: packageJson,
       cache: './dist/cache',
       release: './dist/apps',
-      version: 'v0.36.7',
-      platforms: ['win32-x64'],
+      version: 'v0.37.2',
+      platforms: ['win32-x64', 'darwin-x64'],
       packaging: true,
       asar: true,
-      symbols: true,
+      symbols: false,
       platformResources: {
             darwin: {
                 CFBundleDisplayName: packageJson.name,

@@ -3,11 +3,13 @@ app.controller('AuthCtrl', function ($scope, $location, authService, socketServi
   var dialog = remote.require('dialog');
   var ipc = require('electron').ipcRenderer;
   $scope.isLoggingIn = isLoggingIn;
-	$scope.auth= {};
+	$scope.auth= {
+    Server: 'https://chatserv1.tetusecurity.com:4321/'
+  };
   $scope.loading = false;
 
 	$scope.login=function(){
-    if($scope.auth && $scope.auth.Server && $scope.auth.Username && $scope.auth.Password && $scope.auth.Keyfile){
+    if($scope.auth && /*$scope.auth.Server &&*/ $scope.auth.Username && $scope.auth.Password && $scope.auth.Keyfile){
       $scope.loading = true;
       socketService.connect($scope.auth.Server, function(err, handshake){
         if(err){

@@ -43,7 +43,7 @@ gulp.task('npm', ['copy_node'], function(){
 });
 
 gulp.task('bower', function() {
-  return bower({ directory: 'src/frontend/lib/'});
+  return bower({ directory: 'frontend/lib/', cwd:'src/'});
 });
 
 gulp.task('usemin', ['bower', 'copy_views'], function(){

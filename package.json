@@ -2,7 +2,7 @@
   "name": "tetu",
   "version": "0.1.0",
   "description": "cross platform secure chat and file sharing",
-  "main": "main.js",
+  "main": "src/main.js",
   "license":"unlicense",
   "private":true,
   "author": "TetuSecurity",

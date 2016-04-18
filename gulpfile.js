@@ -8,7 +8,7 @@ var nano        = require('gulp-cssnano');
 var ngAnnotate  = require('gulp-ng-annotate');
 var usemin      = require('gulp-usemin');
 var electron    = require('gulp-electron');
-var packageJson = require('./src/package.json');
+var packageJson = require('./package.json');
 
 // Lint Task
 gulp.task('lint', function() {
@@ -23,7 +23,7 @@ gulp.task('copy_views', function(){
 });
 
 gulp.task('copy_fonts', ['bower'], function(){
-  return gulp.src(['src/frontend/lib/bootstrap/dist/fonts/*'])
+  return gulp.src(['src/frontend/lib/bootstrap/dist/fonts/*', 'src/frontend/styles/fonts/*'])
       .pipe(gulp.dest('dist/src/frontend/fonts/'));
 });
 
@@ -33,7 +33,7 @@ gulp.task('copy_images', function(){
 });
 
 gulp.task('copy_node', function(){
-  return gulp.src(['src/**/*', '!src/frontend/**/*', 'src/package.json'])
+  return gulp.src(['src/**/*', '!src/frontend/**/*', 'package.json'])
       .pipe(gulp.dest('dist/src/'));
 });
 
@@ -43,7 +43,7 @@ gulp.task('npm', ['copy_node'], function(){
 });
 
 gulp.task('bower', function() {
-  return bower({ directory: 'frontend/lib/', cwd:'src/'});
+  return bower({ directory: 'src/frontend/lib/'});
 });
 
 gulp.task('usemin', ['bower', 'copy_views'], function(){

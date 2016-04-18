@@ -26,7 +26,7 @@ module.exports={
   decrypt: function(enc_data, aeskey){
     var decipher = crypto.createDecipher('aes256', aeskey);
     var dec = decipher.update(enc_data, 'hex');
-    data = Buffer.concat([dec, decipher.final()]);
+    var data = Buffer.concat([dec, decipher.final()]);
     return data;
   },
   RSAdecrypt: function(data){
@@ -55,7 +55,7 @@ module.exports={
     hash.update(password, 'utf8');
     var aeskey = hash.digest('hex');
     var cipher = crypto.createCipher('aes256', aeskey);
-    enckeys = cipher.update(JSON.stringify(keys), 'utf8', 'hex');
+    var enckeys = cipher.update(JSON.stringify(keys), 'utf8', 'hex');
     enckeys += cipher.final('hex');
     try{
       fs.writeFileSync(filepath, enckeys);
